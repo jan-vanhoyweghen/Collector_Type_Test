@@ -1,0 +1,81 @@
+{
+  "module": "data-entry-browser-module",
+  "version": "0.1.0",
+  "baseUrl": "http://127.0.0.1:3000",
+  "openApiSpecPath": "exports/openapi.json",
+  "health": {
+    "method": "GET",
+    "path": "/api/health",
+    "response": {
+      "ok": true,
+      "service": "data-entry-browser-module"
+    }
+  },
+  "scrape": {
+    "method": "POST",
+    "path": "/api/scrape",
+    "headers": {
+      "content-type": "application/json"
+    },
+    "requestBody": {
+      "url": "https://www.2dgalleries.com/profile/jan"
+    },
+    "responseShape": {
+      "ok": true,
+      "sourceUrl": "string",
+      "profileUserId": "number",
+      "expectedCount": "number|null",
+      "foundCount": "number",
+      "meetsExpectedCount": "boolean|null",
+      "entries": [
+        {
+          "artworkTitle": "string",
+          "artistName": "string",
+          "artworkUrl": "string",
+          "imageUrl": "string"
+        }
+      ]
+    }
+  },
+  "pdfExtract": {
+    "method": "POST",
+    "path": "/api/pdf-extract",
+    "headers": {
+      "content-type": "multipart/form-data"
+    },
+    "requestBody": {
+      "pdfFile": "<binary PDF>"
+    },
+    "responseShape": {
+      "ok": true,
+      "fileName": "string",
+      "extractedTextLength": "number",
+      "lineCount": "number",
+      "previewLines": [
+        "string"
+      ],
+      "suggestions": {
+        "artworkTitle": "string",
+        "artistName": "string"
+      },
+      "suggestionsList": [
+        {
+          "artworkTitle": "string",
+          "artistName": "string"
+        }
+      ],
+      "suggestionsCount": "number"
+    }
+  },
+  "files": [
+    "package.json",
+    "server.js",
+    "server.py",
+    "start.command",
+    "README.md",
+    "src/scraper.js",
+    "public/index.html",
+    "public/styles.css",
+    "public/app.js"
+  ]
+}

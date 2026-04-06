@@ -1,0 +1,351 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Data Entry Browser Module API",
+    "version": "0.1.0",
+    "description": "API contract for the data entry browser module and 2DGalleries scrape flow."
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:3000",
+      "description": "Local module server"
+    }
+  ],
+  "paths": {
+    "/api/health": {
+      "get": {
+        "operationId": "getHealth",
+        "summary": "Health check",
+        "responses": {
+          "200": {
+            "description": "Service is available",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                },
+                "examples": {
+                  "ok": {
+                    "value": {
+                      "ok": true,
+                      "service": "data-entry-browser-module"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/scrape": {
+      "post": {
+        "operationId": "postScrapeProfile",
+        "summary": "Scrape artworks from a 2DGalleries profile URL",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScrapeRequest"
+              },
+              "examples": {
+                "janProfile": {
+                  "value": {
+                    "url": "https://www.2dgalleries.com/profile/jan"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Scrape completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScrapeSuccessResponse"
+                },
+                "examples": {
+                  "success": {
+                    "value": {
+                      "ok": true,
+                      "sourceUrl": "https://www.2dgalleries.com/profile/jan?lang=en",
+                      "profileUserId": 1042,
+                      "expectedCount": 57,
+                      "foundCount": 56,
+                      "meetsExpectedCount": false,
+                      "entries": [
+                        {
+                          "artworkTitle": "Nell Acqua",
+                          "artistName": "Lorenzo Mattotti",
+                          "artworkUrl": "https://www.2dgalleries.com/art/nell-acqua-235874",
+                          "imageUrl": "https://www.2dgalleries.com/planches/200H/2024/327/mattotti-nell-acqua-3iq3.jpg"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or scrape failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "missingUrl": {
+                    "value": {
+                      "ok": false,
+                      "error": "Please provide a profile URL in `url`."
+                    }
+                  },
+                  "invalidUrl": {
+                    "value": {
+                      "ok": false,
+                      "error": "Only 2DGalleries profile URLs are allowed (example: https://www.2dgalleries.com/profile/jan)."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/pdf-extract": {
+      "post": {
+        "operationId": "postPdfExtract",
+        "summary": "Extract text suggestions (artwork title + artist) from an uploaded PDF",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "pdfFile"
+                ],
+                "properties": {
+                  "pdfFile": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "PDF text extracted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PdfExtractSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request or extraction failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "HealthResponse": {
+        "type": "object",
+        "required": [
+          "ok",
+          "service"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          },
+          "service": {
+            "type": "string",
+            "example": "data-entry-browser-module"
+          }
+        }
+      },
+      "ScrapeRequest": {
+        "type": "object",
+        "required": [
+          "url"
+        ],
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "2DGalleries profile URL (for example https://www.2dgalleries.com/profile/jan)"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ArtworkEntry": {
+        "type": "object",
+        "required": [
+          "artworkTitle",
+          "artistName",
+          "artworkUrl",
+          "imageUrl"
+        ],
+        "properties": {
+          "artworkTitle": {
+            "type": "string"
+          },
+          "artistName": {
+            "type": "string"
+          },
+          "artworkUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "imageUrl": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      },
+      "ScrapeSuccessResponse": {
+        "type": "object",
+        "required": [
+          "ok",
+          "sourceUrl",
+          "profileUserId",
+          "expectedCount",
+          "foundCount",
+          "meetsExpectedCount",
+          "entries"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          },
+          "sourceUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "profileUserId": {
+            "type": "integer"
+          },
+          "expectedCount": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "foundCount": {
+            "type": "integer"
+          },
+          "meetsExpectedCount": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "entries": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ArtworkEntry"
+            }
+          }
+        }
+      },
+      "PdfSuggestions": {
+        "type": "object",
+        "required": [
+          "artworkTitle",
+          "artistName"
+        ],
+        "properties": {
+          "artworkTitle": {
+            "type": "string"
+          },
+          "artistName": {
+            "type": "string"
+          }
+        }
+      },
+      "PdfExtractSuccessResponse": {
+        "type": "object",
+        "required": [
+          "ok",
+          "fileName",
+          "extractedTextLength",
+          "lineCount",
+          "previewLines",
+          "suggestions",
+          "suggestionsList",
+          "suggestionsCount"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": true
+          },
+          "fileName": {
+            "type": "string"
+          },
+          "extractedTextLength": {
+            "type": "integer"
+          },
+          "lineCount": {
+            "type": "integer"
+          },
+          "previewLines": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "suggestions": {
+            "$ref": "#/components/schemas/PdfSuggestions"
+          },
+          "suggestionsList": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PdfSuggestions"
+            }
+          },
+          "suggestionsCount": {
+            "type": "integer"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": [
+          "ok",
+          "error"
+        ],
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "const": false
+          },
+          "error": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

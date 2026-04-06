@@ -1,0 +1,1903 @@
+# Data Entry Browser Module - Code Bundle
+# Generated: 2026-04-03T14:20:06Z
+
+===== FILE: package.json =====
+{
+  "name": "data-entry-profile-module",
+  "version": "0.1.0",
+  "description": "POC data entry browser module linked to a collector profile page",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "check": "node --check server.js && node --check src/scraper.js && node --check public/app.js"
+  },
+  "keywords": [
+    "data-entry",
+    "collector",
+    "scraper",
+    "2dgalleries"
+  ],
+  "license": "MIT"
+}
+
+===== FILE: server.js =====
+"use strict";
+
+const http = require("node:http");
+const path = require("node:path");
+const fs = require("node:fs/promises");
+
+const { scrape2dGalleriesProfile } = require("./src/scraper");
+
+const PORT = Number(process.env.PORT || 3000);
+const HOST = process.env.HOST || "127.0.0.1";
+const PUBLIC_DIR = path.join(__dirname, "public");
+
+const MIME_TYPES = {
+  ".css": "text/css; charset=utf-8",
+  ".html": "text/html; charset=utf-8",
+  ".js": "application/javascript; charset=utf-8",
+  ".json": "application/json; charset=utf-8",
+  ".png": "image/png",
+  ".svg": "image/svg+xml"
+};
+
+function setCorsHeaders(res) {
+  res.setHeader("access-control-allow-origin", "*");
+  res.setHeader("access-control-allow-methods", "GET,POST,HEAD,OPTIONS");
+  res.setHeader("access-control-allow-headers", "content-type");
+}
+
+function sendJson(res, statusCode, payload) {
+  const data = JSON.stringify(payload);
+
+  setCorsHeaders(res);
+  res.writeHead(statusCode, {
+    "cache-control": "no-store",
+    "content-type": "application/json; charset=utf-8"
+  });
+
+  res.end(data);
+}
+
+function sendText(res, statusCode, text) {
+  setCorsHeaders(res);
+  res.writeHead(statusCode, {
+    "cache-control": "no-store",
+    "content-type": "text/plain; charset=utf-8"
+  });
+
+  res.end(text);
+}
+
+async function readRequestBody(req) {
+  const chunks = [];
+
+  for await (const chunk of req) {
+    chunks.push(chunk);
+  }
+
+  return Buffer.concat(chunks).toString("utf8");
+}
+
+async function parseJsonBody(req) {
+  const bodyText = await readRequestBody(req);
+
+  if (!bodyText) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(bodyText);
+  } catch {
+    throw new Error("Request body must be valid JSON.");
+  }
+}
+
+function getSafePublicFilePath(requestPath) {
+  const normalizedRequestPath = requestPath === "/" ? "index.html" : requestPath.replace(/^\/+/, "");
+  const resolvedPath = path.normalize(normalizedRequestPath).replace(/^([.][.][/\\])+/, "");
+  const absolutePath = path.join(PUBLIC_DIR, resolvedPath);
+
+  const allowedPrefix = `${PUBLIC_DIR}${path.sep}`;
+  if (absolutePath !== PUBLIC_DIR && !absolutePath.startsWith(allowedPrefix)) {
+    return null;
+  }
+
+  return absolutePath;
+}
+
+async function serveStaticFile(req, res, pathname) {
+  let normalizedPathname = pathname;
+
+  if (normalizedPathname === "/public" || normalizedPathname === "/public/") {
+    normalizedPathname = "/";
+  } else if (normalizedPathname === "/public/index.html") {
+    normalizedPathname = "/";
+  } else if (normalizedPathname.startsWith("/public/")) {
+    normalizedPathname = normalizedPathname.replace(/^\/public/, "");
+  }
+
+  const filePath = getSafePublicFilePath(normalizedPathname);
+  if (!filePath) {
+    sendText(res, 403, "Forbidden");
+    return;
+  }
+
+  try {
+    const fileContent = await fs.readFile(filePath);
+    const extension = path.extname(filePath).toLowerCase();
+    const contentType = MIME_TYPES[extension] || "application/octet-stream";
+
+    setCorsHeaders(res);
+    res.writeHead(200, {
+      "cache-control": "no-store",
+      "content-type": contentType
+    });
+
+    if (req.method === "HEAD") {
+      res.end();
+      return;
+    }
+
+    res.end(fileContent);
+  } catch (error) {
+    if (error && error.code === "ENOENT") {
+      sendText(res, 404, "Not Found");
+      return;
+    }
+
+    console.error(error);
+    sendText(res, 500, "Internal Server Error");
+  }
+}
+
+async function handleApi(req, res, urlObj) {
+  if (req.method === "GET" && urlObj.pathname === "/api/health") {
+    sendJson(res, 200, {
+      ok: true,
+      service: "data-entry-browser-module"
+    });
+    return true;
+  }
+
+  if (req.method === "POST" && urlObj.pathname === "/api/scrape") {
+    try {
+      const body = await parseJsonBody(req);
+      const targetUrl = typeof body.url === "string" ? body.url.trim() : "";
+
+      if (!targetUrl) {
+        sendJson(res, 400, {
+          ok: false,
+          error: "Please provide a profile URL in `url`."
+        });
+        return true;
+      }
+
+      const scrapeResult = await scrape2dGalleriesProfile(targetUrl);
+
+      sendJson(res, 200, {
+        ok: true,
+        ...scrapeResult
+      });
+      return true;
+    } catch (error) {
+      sendJson(res, 400, {
+        ok: false,
+        error: error instanceof Error ? error.message : "Scrape failed"
+      });
+      return true;
+    }
+  }
+
+  if (urlObj.pathname.startsWith("/api/")) {
+    sendJson(res, 404, {
+      ok: false,
+      error: "API endpoint not found"
+    });
+    return true;
+  }
+
+  return false;
+}
+
+const server = http.createServer(async (req, res) => {
+  try {
+    if (!req.url || !req.method) {
+      sendText(res, 400, "Bad Request");
+      return;
+    }
+
+    if (req.method === "OPTIONS") {
+      setCorsHeaders(res);
+      res.writeHead(204);
+      res.end();
+      return;
+    }
+
+    const urlObj = new URL(req.url, `http://${req.headers.host || "localhost"}`);
+    const apiHandled = await handleApi(req, res, urlObj);
+
+    if (apiHandled) {
+      return;
+    }
+
+    if (req.method !== "GET" && req.method !== "HEAD") {
+      sendText(res, 405, "Method Not Allowed");
+      return;
+    }
+
+    await serveStaticFile(req, res, urlObj.pathname);
+  } catch (error) {
+    console.error(error);
+    sendText(res, 500, "Internal Server Error");
+  }
+});
+
+server.listen(PORT, HOST, () => {
+  console.log(`Data entry browser module running at http://${HOST}:${PORT}`);
+});
+
+===== FILE: server.py =====
+#!/usr/bin/env python3
+"""Data entry browser module server (Python fallback when Node.js is unavailable)."""
+
+from __future__ import annotations
+
+import json
+import os
+import posixpath
+import re
+import sys
+from dataclasses import dataclass
+from html import unescape
+from http import HTTPStatus
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+from typing import Dict, List, Optional
+from urllib.error import HTTPError, URLError
+from urllib.parse import parse_qsl, urlencode, urlparse, urlunparse
+from urllib.request import Request, urlopen
+
+HOST = os.environ.get("HOST", "127.0.0.1")
+PORT = int(os.environ.get("PORT", "3000"))
+PUBLIC_DIR = Path(__file__).resolve().parent / "public"
+
+TWO_DG_HOST = "www.2dgalleries.com"
+TWO_DG_BASE_URL = f"https://{TWO_DG_HOST}"
+
+MIME_TYPES = {
+    ".css": "text/css; charset=utf-8",
+    ".html": "text/html; charset=utf-8",
+    ".js": "application/javascript; charset=utf-8",
+    ".json": "application/json; charset=utf-8",
+    ".png": "image/png",
+    ".svg": "image/svg+xml",
+}
+
+DEFAULT_HEADERS = {
+    "accept-language": "en-US,en;q=0.9",
+    "user-agent": "DataEntryPOC/1.0 (+https://localhost)",
+}
+
+
+def normalize_spaces(text: str) -> str:
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def clean_text(text: str) -> str:
+    no_tags = re.sub(r"<[^>]*>", " ", text or "")
+    return normalize_spaces(unescape(no_tags))
+
+
+def to_absolute_url(value: str) -> str:
+    if not value:
+        return ""
+    if re.match(r"^https?://", value, re.IGNORECASE):
+        return value
+    if value.startswith("/"):
+        return f"{TWO_DG_BASE_URL}{value}"
+    return f"{TWO_DG_BASE_URL}/{value}"
+
+
+@dataclass
+class ArtworkEntry:
+    artworkTitle: str
+    artistName: str
+    artworkUrl: str
+    imageUrl: str
+
+
+def fetch_html(url: str) -> str:
+    request = Request(url=url, headers=DEFAULT_HEADERS)
+    try:
+        with urlopen(request, timeout=20) as response:
+            return response.read().decode("utf-8", errors="replace")
+    except HTTPError as error:
+        raise ValueError(f"Request failed for {url} with status {error.code}.") from error
+    except URLError as error:
+        raise ValueError(f"Network error while requesting {url}: {error.reason}") from error
+
+
+def assert_2dg_profile_url(input_url: str) -> str:
+    try:
+        parsed = urlparse(input_url)
+    except ValueError as error:
+        raise ValueError("Invalid URL provided.") from error
+
+    host = (parsed.hostname or "").lower()
+    path = parsed.path or ""
+
+    is_valid_host = host == TWO_DG_HOST or host.endswith(f".{TWO_DG_HOST}")
+    is_profile_path = re.match(r"^/profile/.+", path, re.IGNORECASE) is not None
+
+    if not is_valid_host or not is_profile_path:
+        raise ValueError(
+            "Only 2DGalleries profile URLs are allowed (example: https://www.2dgalleries.com/profile/jan)."
+        )
+
+    query_items = dict(parse_qsl(parsed.query, keep_blank_values=True))
+    query_items["lang"] = "en"
+
+    return urlunparse(
+        (
+            parsed.scheme or "https",
+            parsed.netloc,
+            parsed.path,
+            parsed.params,
+            urlencode(query_items),
+            parsed.fragment,
+        )
+    )
+
+
+def extract_user_id(profile_html: str) -> int:
+    match = re.search(r"/userartworks/(\d+)", profile_html, re.IGNORECASE)
+    if not match:
+        raise ValueError("Could not detect the profile user id from 2DGalleries page.")
+    return int(match.group(1))
+
+
+def extract_expected_count(profile_html: str, user_id: int) -> Optional[int]:
+    direct = re.search(
+        rf"<a\s+href=\"/userartworks/{user_id}\"[^>]*>\s*(\d+)\s+artworks?\s*</a>",
+        profile_html,
+        re.IGNORECASE,
+    )
+    if direct:
+        return int(direct.group(1))
+
+    fallback = re.search(r"All artworks[^0-9]*(\d+)", profile_html, re.IGNORECASE)
+    if fallback:
+        return int(fallback.group(1))
+
+    return None
+
+
+def split_artwork_blocks(page_html: str) -> List[str]:
+    parts = page_html.split('<div class="artworkcontainer">')[1:]
+    return [f'<div class="artworkcontainer">{item}' for item in parts]
+
+
+def parse_artwork_block(block_html: str) -> Optional[ArtworkEntry]:
+    artwork_path_match = re.search(r'<a class="img"\s+href="([^"]+)"', block_html, re.IGNORECASE)
+    if not artwork_path_match:
+        return None
+
+    image_path_match = re.search(r'<img[^>]+src="([^"]+)"', block_html, re.IGNORECASE)
+    title_match = re.search(r"<h3[^>]*>([\s\S]*?)</h3>", block_html, re.IGNORECASE)
+
+    artist_matches = re.findall(r'<a class="artist"[^>]*>([\s\S]*?)</a>', block_html, re.IGNORECASE)
+    artists = [clean_text(item) for item in artist_matches if clean_text(item)]
+
+    title = clean_text(title_match.group(1) if title_match else "") or "Untitled artwork"
+    artist_name = ", ".join(artists) if artists else "Unknown artist"
+
+    return ArtworkEntry(
+        artworkTitle=title,
+        artistName=artist_name,
+        artworkUrl=to_absolute_url(artwork_path_match.group(1)),
+        imageUrl=to_absolute_url(image_path_match.group(1) if image_path_match else ""),
+    )
+
+
+def find_next_offset(page_html: str, current_offset: int) -> Optional[int]:
+    matches = re.findall(r'data-url="/userartworks/\d+\?uid=\d+&\s*offset=(\d+)"', page_html, re.IGNORECASE)
+    higher = [int(item) for item in matches if int(item) > current_offset]
+    return min(higher) if higher else None
+
+
+def scrape_2dg_profile(profile_url: str) -> Dict[str, object]:
+    safe_profile_url = assert_2dg_profile_url(profile_url)
+    profile_html = fetch_html(safe_profile_url)
+
+    profile_user_id = extract_user_id(profile_html)
+    expected_count = extract_expected_count(profile_html, profile_user_id)
+
+    collected: List[ArtworkEntry] = []
+    visited_offsets = set()
+    current_offset = 0
+
+    for _ in range(100):
+        if current_offset in visited_offsets:
+            break
+
+        visited_offsets.add(current_offset)
+
+        page_url = (
+            f"{TWO_DG_BASE_URL}/userartworks/{profile_user_id}"
+            f"?uid={profile_user_id}&offset={current_offset}&ajx=1&pager=1&hr=1&pid={profile_user_id}"
+        )
+        page_html = fetch_html(page_url)
+
+        page_entries = [
+            parsed
+            for parsed in (parse_artwork_block(block) for block in split_artwork_blocks(page_html))
+            if parsed is not None
+        ]
+
+        if not page_entries:
+            break
+
+        collected.extend(page_entries)
+
+        next_offset = find_next_offset(page_html, current_offset)
+        if next_offset is None:
+            break
+
+        current_offset = next_offset
+
+    deduped: List[ArtworkEntry] = []
+    seen = set()
+
+    for entry in collected:
+        key = entry.artworkUrl or f"{entry.artworkTitle}|{entry.artistName}|{entry.imageUrl}"
+        if key not in seen:
+            seen.add(key)
+            deduped.append(entry)
+
+    entries_payload = [
+        {
+            "artworkTitle": item.artworkTitle,
+            "artistName": item.artistName,
+            "artworkUrl": item.artworkUrl,
+            "imageUrl": item.imageUrl,
+        }
+        for item in deduped
+    ]
+
+    return {
+        "sourceUrl": safe_profile_url,
+        "profileUserId": profile_user_id,
+        "expectedCount": expected_count,
+        "foundCount": len(entries_payload),
+        "meetsExpectedCount": None if expected_count is None else len(entries_payload) == expected_count,
+        "entries": entries_payload,
+    }
+
+
+class AppHandler(BaseHTTPRequestHandler):
+    server_version = "DataEntryModule/0.1"
+
+    def do_OPTIONS(self) -> None:
+        self.send_response(HTTPStatus.NO_CONTENT)
+        self._set_cors_headers()
+        self.end_headers()
+
+    def do_HEAD(self) -> None:
+        self._handle_request(with_body=False)
+
+    def do_GET(self) -> None:
+        self._handle_request(with_body=True)
+
+    def do_POST(self) -> None:
+        self._handle_request(with_body=True)
+
+    def log_message(self, fmt: str, *args: object) -> None:
+        sys.stdout.write("%s - - [%s] %s\n" % (self.client_address[0], self.log_date_time_string(), fmt % args))
+
+    def _set_cors_headers(self) -> None:
+        self.send_header("access-control-allow-origin", "*")
+        self.send_header("access-control-allow-methods", "GET,POST,HEAD,OPTIONS")
+        self.send_header("access-control-allow-headers", "content-type")
+
+    def _send_json(self, status: int, payload: Dict[str, object], with_body: bool = True) -> None:
+        encoded = json.dumps(payload).encode("utf-8")
+        self.send_response(status)
+        self._set_cors_headers()
+        self.send_header("cache-control", "no-store")
+        self.send_header("content-type", "application/json; charset=utf-8")
+        self.send_header("content-length", str(len(encoded)))
+        self.end_headers()
+        if with_body:
+            self.wfile.write(encoded)
+
+    def _send_text(self, status: int, text: str, with_body: bool = True) -> None:
+        encoded = text.encode("utf-8")
+        self.send_response(status)
+        self._set_cors_headers()
+        self.send_header("cache-control", "no-store")
+        self.send_header("content-type", "text/plain; charset=utf-8")
+        self.send_header("content-length", str(len(encoded)))
+        self.end_headers()
+        if with_body:
+            self.wfile.write(encoded)
+
+    def _send_file(self, status: int, file_path: Path, with_body: bool = True) -> None:
+        content = file_path.read_bytes()
+        extension = file_path.suffix.lower()
+        mime = MIME_TYPES.get(extension, "application/octet-stream")
+
+        self.send_response(status)
+        self._set_cors_headers()
+        self.send_header("cache-control", "no-store")
+        self.send_header("content-type", mime)
+        self.send_header("content-length", str(len(content)))
+        self.end_headers()
+        if with_body:
+            self.wfile.write(content)
+
+    def _handle_request(self, with_body: bool) -> None:
+        parsed = urlparse(self.path)
+
+        if parsed.path == "/api/health" and self.command == "GET":
+            self._send_json(HTTPStatus.OK, {"ok": True, "service": "data-entry-browser-module"}, with_body=with_body)
+            return
+
+        if parsed.path == "/api/scrape" and self.command == "POST":
+            self._handle_scrape(with_body=with_body)
+            return
+
+        if parsed.path.startswith("/api/"):
+            self._send_json(HTTPStatus.NOT_FOUND, {"ok": False, "error": "API endpoint not found"}, with_body=with_body)
+            return
+
+        if self.command not in {"GET", "HEAD"}:
+            self._send_text(HTTPStatus.METHOD_NOT_ALLOWED, "Method Not Allowed", with_body=with_body)
+            return
+
+        self._serve_static(parsed.path, with_body=with_body)
+
+    def _handle_scrape(self, with_body: bool) -> None:
+        try:
+            raw_length = self.headers.get("content-length")
+            length = int(raw_length) if raw_length else 0
+        except ValueError:
+            self._send_json(HTTPStatus.BAD_REQUEST, {"ok": False, "error": "Invalid content length"}, with_body=with_body)
+            return
+
+        body_bytes = self.rfile.read(length) if length > 0 else b"{}"
+        try:
+            body = json.loads(body_bytes.decode("utf-8"))
+        except json.JSONDecodeError:
+            self._send_json(
+                HTTPStatus.BAD_REQUEST,
+                {"ok": False, "error": "Request body must be valid JSON."},
+                with_body=with_body,
+            )
+            return
+
+        target_url = str(body.get("url", "")).strip()
+        if not target_url:
+            self._send_json(
+                HTTPStatus.BAD_REQUEST,
+                {"ok": False, "error": "Please provide a profile URL in `url`."},
+                with_body=with_body,
+            )
+            return
+
+        try:
+            result = scrape_2dg_profile(target_url)
+        except Exception as error:  # pylint: disable=broad-except
+            self._send_json(HTTPStatus.BAD_REQUEST, {"ok": False, "error": str(error)}, with_body=with_body)
+            return
+
+        payload = {"ok": True, **result}
+        self._send_json(HTTPStatus.OK, payload, with_body=with_body)
+
+    def _serve_static(self, request_path: str, with_body: bool) -> None:
+        normalized = request_path
+
+        if normalized in {"/public", "/public/", "/public/index.html"}:
+            normalized = "/"
+        elif normalized.startswith("/public/"):
+            normalized = normalized[len("/public") :]
+
+        if normalized in {"", "/"}:
+            normalized_rel = "index.html"
+        else:
+            normalized_rel = posixpath.normpath(normalized.lstrip("/"))
+
+        if normalized_rel.startswith("../"):
+            self._send_text(HTTPStatus.FORBIDDEN, "Forbidden", with_body=with_body)
+            return
+
+        file_path = (PUBLIC_DIR / normalized_rel).resolve()
+
+        try:
+            file_path.relative_to(PUBLIC_DIR.resolve())
+        except ValueError:
+            self._send_text(HTTPStatus.FORBIDDEN, "Forbidden", with_body=with_body)
+            return
+
+        if not file_path.exists() or not file_path.is_file():
+            self._send_text(HTTPStatus.NOT_FOUND, "Not Found", with_body=with_body)
+            return
+
+        self._send_file(HTTPStatus.OK, file_path, with_body=with_body)
+
+
+def main() -> None:
+    server = ThreadingHTTPServer((HOST, PORT), AppHandler)
+    print(f"Data entry browser module running at http://{HOST}:{PORT}")
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.server_close()
+
+
+if __name__ == "__main__":
+    main()
+
+===== FILE: start.command =====
+#!/bin/bash
+set -euo pipefail
+
+PROJECT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$PROJECT_DIR"
+
+echo "Data Entry Browser Module starten..."
+echo "Projectmap: $PROJECT_DIR"
+echo "Open in je browser: http://127.0.0.1:3000/"
+echo ""
+
+if command -v open >/dev/null 2>&1; then
+  (sleep 1; open "http://127.0.0.1:3000/" >/dev/null 2>&1 || true) &
+fi
+
+if command -v node >/dev/null 2>&1; then
+  echo "Backend: Node.js (server.js)"
+  exec node server.js
+fi
+
+if command -v python3 >/dev/null 2>&1; then
+  echo "Backend: Python fallback (server.py)"
+  exec python3 server.py
+fi
+
+echo "Geen Node.js of Python3 gevonden op je systeem."
+echo "Installeer Node.js via: https://nodejs.org/ of Python 3 via: https://www.python.org/"
+read -r -p "Druk op Enter om af te sluiten..." _
+exit 1
+
+===== FILE: README.md =====
+# Data Entry Browser Module (POC)
+
+This project implements the requested **collector profile + data entry browser module**.
+
+## What it includes
+
+- Collector profile form
+  - Required: first name, name
+  - Optional: age, location, mail address
+  - Input mode choice: manual, PDF, scrape link
+- Data entry module
+  - Manual entry (one by one)
+  - PDF workflow (register PDF + selected artwork)
+  - Scraping workflow for 2DGalleries profile links
+- Artwork listing table
+  - One picture, artwork name, and artist name per row
+
+## POC scrape target
+
+Default scrape URL in the UI:
+
+- `https://www.2dgalleries.com/profile/jan`
+
+The scraper reads the profile metadata and paginated artwork blocks from 2DGalleries and reports:
+
+- expected profile artwork count
+- found extracted artwork count
+- whether both match
+
+## Run
+
+With Node.js:
+
+```bash
+npm start
+```
+
+Or with Python fallback:
+
+```bash
+python3 server.py
+```
+
+Open:
+
+- `http://127.0.0.1:3000`
+
+Also valid:
+
+- `http://127.0.0.1:3000/public/index.html`
+
+## Start with double click (macOS)
+
+- Double-click `start.command` in the project folder.
+- Keep the Terminal window open while using the module.
+- The script uses `server.js` when Node.js is installed, otherwise it falls back to `server.py` (Python 3).
+- Your browser opens automatically on `http://127.0.0.1:3000/`.
+
+## API
+
+- `GET /api/health`
+- `POST /api/scrape`
+
+Example body:
+
+```json
+{
+  "url": "https://www.2dgalleries.com/profile/jan"
+}
+```
+
+===== FILE: src/scraper.js =====
+"use strict";
+
+const TWO_DG_HOST = "www.2dgalleries.com";
+const TWO_DG_BASE_URL = `https://${TWO_DG_HOST}`;
+
+const DEFAULT_HEADERS = {
+  "accept-language": "en-US,en;q=0.9",
+  "user-agent": "DataEntryPOC/1.0 (+https://localhost)"
+};
+
+function assert2dProfileUrl(inputUrl) {
+  let parsedUrl;
+
+  try {
+    parsedUrl = new URL(inputUrl);
+  } catch {
+    throw new Error("Invalid URL provided.");
+  }
+
+  const isValidHost = parsedUrl.hostname === TWO_DG_HOST || parsedUrl.hostname.endsWith(`.${TWO_DG_HOST}`);
+  const isProfilePath = /^\/profile\/.+/i.test(parsedUrl.pathname);
+
+  if (!isValidHost || !isProfilePath) {
+    throw new Error("Only 2DGalleries profile URLs are allowed (example: https://www.2dgalleries.com/profile/jan).");
+  }
+
+  parsedUrl.searchParams.set("lang", "en");
+  return parsedUrl;
+}
+
+async function fetchHtml(url) {
+  const response = await fetch(url, { headers: DEFAULT_HEADERS });
+
+  if (!response.ok) {
+    throw new Error(`Request failed for ${url} with status ${response.status}.`);
+  }
+
+  return response.text();
+}
+
+function extractUserId(profileHtml) {
+  const userIdMatch = profileHtml.match(/\/userartworks\/(\d+)/i);
+
+  if (!userIdMatch) {
+    throw new Error("Could not detect the profile user id from 2DGalleries page.");
+  }
+
+  return Number(userIdMatch[1]);
+}
+
+function extractExpectedCount(profileHtml, userId) {
+  const counterRegex = new RegExp(`<a\\s+href=\"/userartworks/${userId}\"[^>]*>\\s*(\\d+)\\s+artworks?\\s*</a>`, "i");
+  const directMatch = profileHtml.match(counterRegex);
+
+  if (directMatch) {
+    return Number(directMatch[1]);
+  }
+
+  const allArtworksOption = profileHtml.match(/All artworks[^0-9]*(\d+)/i);
+  if (allArtworksOption) {
+    return Number(allArtworksOption[1]);
+  }
+
+  return null;
+}
+
+function splitArtworkBlocks(pageHtml) {
+  return pageHtml
+    .split('<div class="artworkcontainer">')
+    .slice(1)
+    .map((partial) => `<div class="artworkcontainer">${partial}`);
+}
+
+function firstMatch(regex, content) {
+  const match = content.match(regex);
+  return match ? match[1] : "";
+}
+
+function stripTags(value) {
+  return value.replace(/<[^>]*>/g, " ");
+}
+
+function decodeHtmlEntities(value) {
+  const entityMap = {
+    amp: "&",
+    apos: "'",
+    quot: '"',
+    lt: "<",
+    gt: ">",
+    nbsp: " ",
+    eacute: "é",
+    Eacute: "É",
+    aacute: "á",
+    agrave: "à",
+    egrave: "è",
+    ecirc: "ê",
+    ccedil: "ç",
+    uuml: "ü",
+    ouml: "ö",
+    auml: "ä"
+  };
+
+  let decoded = value.replace(/&([a-zA-Z]+);/g, (full, named) => entityMap[named] || full);
+
+  decoded = decoded.replace(/&#(\d+);/g, (_, codePoint) => {
+    const asNumber = Number(codePoint);
+    return Number.isNaN(asNumber) ? _ : String.fromCodePoint(asNumber);
+  });
+
+  decoded = decoded.replace(/&#x([0-9a-fA-F]+);/g, (_, hexCodePoint) => {
+    const asNumber = Number.parseInt(hexCodePoint, 16);
+    return Number.isNaN(asNumber) ? _ : String.fromCodePoint(asNumber);
+  });
+
+  return decoded;
+}
+
+function normalizeWhitespace(value) {
+  return value.replace(/\s+/g, " ").trim();
+}
+
+function cleanText(value) {
+  return normalizeWhitespace(decodeHtmlEntities(stripTags(value || "")));
+}
+
+function toAbsoluteUrl(value) {
+  if (!value) {
+    return "";
+  }
+
+  if (/^https?:\/\//i.test(value)) {
+    return value;
+  }
+
+  if (value.startsWith("/")) {
+    return `${TWO_DG_BASE_URL}${value}`;
+  }
+
+  return `${TWO_DG_BASE_URL}/${value}`;
+}
+
+function parseArtworkBlock(blockHtml) {
+  const artworkPath = firstMatch(/<a class=\"img\"\s+href=\"([^\"]+)\"/i, blockHtml);
+  if (!artworkPath) {
+    return null;
+  }
+
+  const imagePath = firstMatch(/<img[^>]+src=\"([^\"]+)\"/i, blockHtml);
+  const titleRaw = firstMatch(/<h3[^>]*>([\s\S]*?)<\/h3>/i, blockHtml);
+  const artistMatches = [...blockHtml.matchAll(/<a class=\"artist\"[^>]*>([\s\S]*?)<\/a>/gi)];
+
+  const artists = artistMatches
+    .map((match) => cleanText(match[1]))
+    .filter(Boolean);
+
+  return {
+    artworkTitle: cleanText(titleRaw) || "Untitled artwork",
+    artistName: artists.length > 0 ? artists.join(", ") : "Unknown artist",
+    artworkUrl: toAbsoluteUrl(artworkPath),
+    imageUrl: toAbsoluteUrl(imagePath)
+  };
+}
+
+function findNextOffset(pageHtml, currentOffset) {
+  const matches = [...pageHtml.matchAll(/data-url=\"\/userartworks\/\d+\?uid=\d+&\s*offset=(\d+)\"/gi)];
+  const higherOffsets = matches
+    .map((match) => Number(match[1]))
+    .filter((offset) => Number.isFinite(offset) && offset > currentOffset);
+
+  if (higherOffsets.length === 0) {
+    return null;
+  }
+
+  return Math.min(...higherOffsets);
+}
+
+function dedupeEntries(entries) {
+  const seen = new Set();
+  const deduped = [];
+
+  for (const entry of entries) {
+    const key = entry.artworkUrl || `${entry.artworkTitle}|${entry.artistName}|${entry.imageUrl}`;
+
+    if (!seen.has(key)) {
+      seen.add(key);
+      deduped.push(entry);
+    }
+  }
+
+  return deduped;
+}
+
+async function scrape2dGalleriesProfile(profileUrl) {
+  const safeProfileUrl = assert2dProfileUrl(profileUrl);
+  const profileHtml = await fetchHtml(safeProfileUrl.href);
+
+  const profileUserId = extractUserId(profileHtml);
+  const expectedCount = extractExpectedCount(profileHtml, profileUserId);
+
+  const collected = [];
+  const visitedOffsets = new Set();
+
+  let currentOffset = 0;
+  let iteration = 0;
+
+  while (iteration < 100) {
+    if (visitedOffsets.has(currentOffset)) {
+      break;
+    }
+
+    visitedOffsets.add(currentOffset);
+
+    const pageUrl = `${TWO_DG_BASE_URL}/userartworks/${profileUserId}?uid=${profileUserId}&offset=${currentOffset}&ajx=1&pager=1&hr=1&pid=${profileUserId}`;
+    const pageHtml = await fetchHtml(pageUrl);
+
+    const pageEntries = splitArtworkBlocks(pageHtml)
+      .map(parseArtworkBlock)
+      .filter(Boolean);
+
+    if (pageEntries.length === 0) {
+      break;
+    }
+
+    collected.push(...pageEntries);
+
+    const nextOffset = findNextOffset(pageHtml, currentOffset);
+    if (nextOffset === null) {
+      break;
+    }
+
+    currentOffset = nextOffset;
+    iteration += 1;
+  }
+
+  const entries = dedupeEntries(collected);
+
+  return {
+    sourceUrl: safeProfileUrl.href,
+    profileUserId,
+    expectedCount,
+    foundCount: entries.length,
+    meetsExpectedCount: expectedCount === null ? null : entries.length === expectedCount,
+    entries
+  };
+}
+
+module.exports = {
+  scrape2dGalleriesProfile,
+  __internal: {
+    assert2dProfileUrl,
+    extractUserId,
+    extractExpectedCount,
+    splitArtworkBlocks,
+    parseArtworkBlock,
+    findNextOffset,
+    decodeHtmlEntities
+  }
+};
+
+===== FILE: public/index.html =====
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Data Entry Browser Module</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="bg-orb orb-a" aria-hidden="true"></div>
+    <div class="bg-orb orb-b" aria-hidden="true"></div>
+
+    <main class="shell">
+      <header class="hero panel">
+        <p class="badge">POC</p>
+        <h1>Data Entry Browser Module</h1>
+        <p>
+          Collector profile intake linked to a data entry flow.
+          Artworks can be added manually, through a PDF workflow, or by scraping a 2DGalleries profile link.
+        </p>
+      </header>
+
+      <section class="panel" id="profile-panel">
+        <h2>Collector Profile</h2>
+
+        <form id="profile-form" class="form-stack" novalidate>
+          <div class="grid two-col">
+            <label>
+              First name *
+              <input name="firstName" type="text" required placeholder="Jan">
+            </label>
+
+            <label>
+              Name *
+              <input name="lastName" type="text" required placeholder="Vanhoyweghen">
+            </label>
+
+            <label>
+              Age (optional)
+              <input name="age" type="number" min="0" max="130" placeholder="42">
+            </label>
+
+            <label>
+              Location (optional)
+              <input name="location" type="text" placeholder="Brussels">
+            </label>
+
+            <label class="span-2">
+              Mail address (optional)
+              <input name="email" type="email" placeholder="collector@example.com">
+            </label>
+          </div>
+
+          <fieldset class="method-picker">
+            <legend>How should this collector feed data into the module?</legend>
+
+            <label class="choice">
+              <input type="radio" name="ingestMethod" value="manual" checked>
+              Upload artworks manually, one by one
+            </label>
+
+            <label class="choice">
+              <input type="radio" name="ingestMethod" value="pdf">
+              Upload artworks with a PDF file
+            </label>
+
+            <label class="choice">
+              <input type="radio" name="ingestMethod" value="scrape">
+              Provide an online platform link for scraping
+            </label>
+          </fieldset>
+
+          <button class="btn primary" type="submit">Save profile</button>
+        </form>
+
+        <div id="profile-summary" class="summary hidden" aria-live="polite"></div>
+      </section>
+
+      <section class="panel" id="data-entry-panel">
+        <h2>Data Entry Module</h2>
+        <p class="muted">Select one ingestion mode and add records to the list.</p>
+
+        <div class="mode-tabs" role="tablist" aria-label="Ingestion modes">
+          <button class="tab active" type="button" data-mode="manual">Manual</button>
+          <button class="tab" type="button" data-mode="pdf">PDF</button>
+          <button class="tab" type="button" data-mode="scrape">Scrape link</button>
+        </div>
+
+        <div id="mode-manual" class="mode-section">
+          <form id="manual-form" class="form-stack">
+            <div class="grid two-col">
+              <label>
+                Artwork name *
+                <input name="artworkTitle" type="text" required placeholder="Nell Acqua">
+              </label>
+
+              <label>
+                Artist name *
+                <input name="artistName" type="text" required placeholder="Lorenzo Mattotti">
+              </label>
+
+              <label class="span-2">
+                Picture URL *
+                <input name="imageUrl" type="url" required placeholder="https://example.com/image.jpg">
+              </label>
+            </div>
+
+            <button class="btn" type="submit">Add artwork</button>
+          </form>
+        </div>
+
+        <div id="mode-pdf" class="mode-section hidden">
+          <form id="pdf-form" class="form-stack">
+            <div class="grid two-col">
+              <label class="span-2">
+                PDF file *
+                <input name="pdfFile" type="file" accept="application/pdf" required>
+              </label>
+
+              <label>
+                Selected artwork name *
+                <input name="artworkTitle" type="text" required placeholder="Title from PDF">
+              </label>
+
+              <label>
+                Artist name *
+                <input name="artistName" type="text" required placeholder="Artist from PDF">
+              </label>
+
+              <label class="span-2">
+                Picture URL (optional)
+                <input name="imageUrl" type="url" placeholder="https://example.com/image.jpg">
+              </label>
+            </div>
+
+            <p class="hint">
+              POC behavior: this flow registers the PDF upload and stores one selected artwork entry.
+            </p>
+
+            <button class="btn" type="submit">Register PDF entry</button>
+          </form>
+        </div>
+
+        <div id="mode-scrape" class="mode-section hidden">
+          <form id="scrape-form" class="form-stack">
+            <label>
+              2DGalleries profile URL *
+              <input
+                name="profileUrl"
+                type="url"
+                required
+                value="https://www.2dgalleries.com/profile/jan"
+                placeholder="https://www.2dgalleries.com/profile/jan"
+              >
+            </label>
+
+            <button class="btn" type="submit">Scrape artworks</button>
+          </form>
+
+          <p id="scrape-status" class="status hidden" aria-live="polite"></p>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="header-row">
+          <h2>Collected Artworks</h2>
+          <button id="clear-list" class="btn ghost" type="button">Clear list</button>
+        </div>
+
+        <p id="list-meta" class="muted">0 entries loaded</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Picture</th>
+                <th>Artwork</th>
+                <th>Artist</th>
+                <th>Source</th>
+              </tr>
+            </thead>
+            <tbody id="entries-body"></tbody>
+          </table>
+        </div>
+
+        <p id="empty-state" class="empty">No artworks yet. Add one with the module above.</p>
+      </section>
+    </main>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>
+
+===== FILE: public/styles.css =====
+:root {
+  --bg-main: #f3efe3;
+  --bg-accent: #f6d6a4;
+  --ink: #18242f;
+  --ink-soft: #4f6070;
+  --line: #d7c7af;
+  --card: rgba(255, 251, 244, 0.82);
+  --card-strong: #fffaf0;
+  --brand: #0f6c78;
+  --brand-strong: #0b4b53;
+  --warn: #ac5a1d;
+  --ok: #1f6f4a;
+  --danger: #8f2a2a;
+  --shadow: 0 20px 45px rgba(30, 43, 53, 0.16);
+  --radius: 18px;
+  --font-display: "Rockwell", "Palatino Linotype", "Book Antiqua", serif;
+  --font-body: "Avenir Next", "Trebuchet MS", "Segoe UI", sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--ink);
+  font-family: var(--font-body);
+  line-height: 1.45;
+  background:
+    radial-gradient(1200px 700px at -15% 10%, #fff7d1 0%, transparent 56%),
+    radial-gradient(1000px 560px at 112% 92%, #d5f0e4 0%, transparent 61%),
+    linear-gradient(135deg, var(--bg-main), var(--bg-accent));
+}
+
+.bg-orb {
+  position: fixed;
+  border-radius: 999px;
+  filter: blur(14px);
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.55;
+}
+
+.orb-a {
+  width: 300px;
+  height: 300px;
+  top: -70px;
+  right: 8%;
+  background: radial-gradient(circle at 30% 30%, #ffddb1, #f7bb80 60%, #de8f4f);
+}
+
+.orb-b {
+  width: 260px;
+  height: 260px;
+  bottom: -60px;
+  left: 4%;
+  background: radial-gradient(circle at 60% 20%, #ccf5e8, #7cd7c0 62%, #4eb29f);
+}
+
+.shell {
+  width: min(1100px, calc(100% - 2.2rem));
+  margin: 1.8rem auto 2.4rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.panel {
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: linear-gradient(170deg, var(--card), rgba(255, 251, 244, 0.68));
+  box-shadow: var(--shadow);
+  padding: 1.15rem 1.2rem;
+  animation: panel-enter 480ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+
+.panel:nth-of-type(2) {
+  animation-delay: 40ms;
+}
+
+.panel:nth-of-type(3) {
+  animation-delay: 80ms;
+}
+
+.panel:nth-of-type(4) {
+  animation-delay: 120ms;
+}
+
+@keyframes panel-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+h1,
+h2,
+legend {
+  font-family: var(--font-display);
+  margin: 0;
+  letter-spacing: 0.02em;
+}
+
+h1 {
+  font-size: clamp(1.65rem, 2.9vw, 2.4rem);
+}
+
+h2 {
+  font-size: clamp(1.22rem, 2.3vw, 1.65rem);
+  margin-bottom: 0.55rem;
+}
+
+p {
+  margin-top: 0.5rem;
+}
+
+.hero p {
+  color: var(--ink-soft);
+  max-width: 70ch;
+}
+
+.badge {
+  display: inline-block;
+  margin: 0 0 0.45rem;
+  padding: 0.2rem 0.58rem;
+  border: 1px solid var(--brand);
+  border-radius: 999px;
+  color: var(--brand-strong);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: #ddf4f6;
+}
+
+.form-stack {
+  display: grid;
+  gap: 0.86rem;
+}
+
+.grid {
+  display: grid;
+  gap: 0.72rem;
+}
+
+.two-col {
+  grid-template-columns: 1fr 1fr;
+}
+
+.span-2 {
+  grid-column: 1 / -1;
+}
+
+label {
+  display: grid;
+  gap: 0.33rem;
+  font-size: 0.94rem;
+  color: var(--ink-soft);
+}
+
+input {
+  width: 100%;
+  border: 1px solid #b8ad9e;
+  border-radius: 12px;
+  padding: 0.56rem 0.7rem;
+  font: inherit;
+  color: var(--ink);
+  background: var(--card-strong);
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+
+input:focus {
+  border-color: var(--brand);
+  box-shadow: 0 0 0 3px rgba(15, 108, 120, 0.2);
+  outline: none;
+}
+
+input[type="file"] {
+  padding: 0.42rem;
+}
+
+.method-picker {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 0.75rem;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.choice {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--ink);
+}
+
+.choice input {
+  width: auto;
+  margin: 0;
+}
+
+.mode-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.7rem;
+}
+
+.tab {
+  border: 1px solid #9fb8bc;
+  background: #ebf7f8;
+  color: #15464d;
+  border-radius: 999px;
+  padding: 0.36rem 0.78rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.tab.active {
+  background: var(--brand);
+  color: #f4ffff;
+  border-color: var(--brand);
+}
+
+.mode-section {
+  background: rgba(255, 251, 244, 0.64);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 0.8rem;
+}
+
+.btn {
+  border: 1px solid var(--brand);
+  border-radius: 11px;
+  background: #e6f3f5;
+  color: var(--brand-strong);
+  font: inherit;
+  font-weight: 700;
+  padding: 0.5rem 0.82rem;
+  width: fit-content;
+  cursor: pointer;
+}
+
+.btn:hover {
+  filter: brightness(0.98);
+}
+
+.btn.primary {
+  background: var(--brand);
+  color: #f8ffff;
+}
+
+.btn.ghost {
+  border-color: #b58a5f;
+  color: #7b4a1d;
+  background: #fff2df;
+}
+
+.summary {
+  margin-top: 0.8rem;
+  border-radius: 12px;
+  padding: 0.62rem 0.75rem;
+  border: 1px solid #8ab6bf;
+  background: #e9f6f7;
+}
+
+.hint,
+.muted {
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+.status {
+  margin-top: 0.65rem;
+  padding: 0.62rem 0.72rem;
+  border-radius: 11px;
+  border: 1px solid transparent;
+  font-size: 0.95rem;
+}
+
+.status.ok {
+  border-color: #84be9f;
+  background: #e8f7ef;
+  color: var(--ok);
+}
+
+.status.warn {
+  border-color: #e1b686;
+  background: #fff4e8;
+  color: var(--warn);
+}
+
+.status.error {
+  border-color: #d89a9a;
+  background: #fdeeee;
+  color: var(--danger);
+}
+
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+}
+
+.table-wrap {
+  overflow: auto;
+  margin-top: 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 640px;
+  background: var(--card-strong);
+}
+
+th,
+td {
+  border-bottom: 1px solid #e7dccd;
+  padding: 0.54rem 0.58rem;
+  text-align: left;
+  vertical-align: middle;
+  font-size: 0.93rem;
+}
+
+th {
+  background: #fff4df;
+}
+
+tr:last-child td {
+  border-bottom: 0;
+}
+
+.thumb {
+  width: 66px;
+  height: 46px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #dcc7ac;
+  background: #fff;
+}
+
+.empty {
+  margin-top: 0.68rem;
+  color: #6f6053;
+  font-style: italic;
+}
+
+.hidden {
+  display: none !important;
+}
+
+@media (max-width: 840px) {
+  .shell {
+    width: min(100%, calc(100% - 1.2rem));
+  }
+
+  .two-col {
+    grid-template-columns: 1fr;
+  }
+
+  .span-2 {
+    grid-column: auto;
+  }
+
+  .header-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+===== FILE: public/app.js =====
+"use strict";
+
+const PLACEHOLDER_IMAGE =
+  "data:image/svg+xml;charset=UTF-8," +
+  encodeURIComponent(
+    "<svg xmlns='http://www.w3.org/2000/svg' width='132' height='92' viewBox='0 0 132 92'><rect width='132' height='92' fill='#f7eddc'/><rect x='8' y='8' width='116' height='76' rx='8' fill='#fff7ec' stroke='#dcb98a'/><circle cx='44' cy='41' r='13' fill='#ffd19d'/><path d='M22 68 L48 49 L66 61 L82 46 L110 68 Z' fill='#9dcab3'/><text x='66' y='84' text-anchor='middle' font-size='10' fill='#725538' font-family='Trebuchet MS'>No image</text></svg>"
+  );
+
+const state = {
+  activeMode: "manual",
+  entries: [],
+  profile: null
+};
+
+const API_BASE_URL = window.location.protocol === "file:" ? "http://127.0.0.1:3000" : "";
+
+const elements = {
+  clearListButton: document.querySelector("#clear-list"),
+  emptyState: document.querySelector("#empty-state"),
+  entriesBody: document.querySelector("#entries-body"),
+  listMeta: document.querySelector("#list-meta"),
+  manualForm: document.querySelector("#manual-form"),
+  modeSections: document.querySelectorAll(".mode-section"),
+  profileForm: document.querySelector("#profile-form"),
+  profileSummary: document.querySelector("#profile-summary"),
+  pdfForm: document.querySelector("#pdf-form"),
+  scrapeForm: document.querySelector("#scrape-form"),
+  scrapeStatus: document.querySelector("#scrape-status"),
+  tabButtons: document.querySelectorAll(".tab")
+};
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function normalizeText(value) {
+  return String(value || "").replace(/\s+/g, " ").trim();
+}
+
+function entryKey(entry) {
+  return normalizeText(entry.artworkUrl || `${entry.artworkTitle}|${entry.artistName}|${entry.imageUrl}|${entry.source}`);
+}
+
+function statusClass(type) {
+  if (type === "ok") {
+    return "ok";
+  }
+
+  if (type === "warn") {
+    return "warn";
+  }
+
+  return "error";
+}
+
+function setScrapeStatus(type, message) {
+  const cssClass = statusClass(type);
+
+  elements.scrapeStatus.className = `status ${cssClass}`;
+  elements.scrapeStatus.textContent = message;
+  elements.scrapeStatus.classList.remove("hidden");
+}
+
+function clearScrapeStatus() {
+  elements.scrapeStatus.classList.add("hidden");
+  elements.scrapeStatus.className = "status hidden";
+  elements.scrapeStatus.textContent = "";
+}
+
+function toSafeImageUrl(url) {
+  const text = normalizeText(url);
+  if (!text) {
+    return PLACEHOLDER_IMAGE;
+  }
+
+  if (/^https?:\/\//i.test(text) || /^data:image\//i.test(text)) {
+    return text;
+  }
+
+  return PLACEHOLDER_IMAGE;
+}
+
+function renderEntries() {
+  elements.entriesBody.innerHTML = "";
+
+  state.entries.forEach((entry, index) => {
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+      <td>${index + 1}</td>
+      <td><img class="thumb" src="${escapeHtml(toSafeImageUrl(entry.imageUrl))}" alt="${escapeHtml(entry.artworkTitle)}"></td>
+      <td>${escapeHtml(entry.artworkTitle)}</td>
+      <td>${escapeHtml(entry.artistName)}</td>
+      <td>${escapeHtml(entry.source)}</td>
+    `;
+
+    elements.entriesBody.appendChild(row);
+  });
+
+  elements.listMeta.textContent = `${state.entries.length} entr${state.entries.length === 1 ? "y" : "ies"} loaded`;
+  elements.emptyState.classList.toggle("hidden", state.entries.length > 0);
+}
+
+function addEntries(entries) {
+  const knownKeys = new Set(state.entries.map(entryKey));
+
+  for (const rawEntry of entries) {
+    const entry = {
+      artworkTitle: normalizeText(rawEntry.artworkTitle) || "Untitled artwork",
+      artistName: normalizeText(rawEntry.artistName) || "Unknown artist",
+      artworkUrl: normalizeText(rawEntry.artworkUrl),
+      imageUrl: normalizeText(rawEntry.imageUrl),
+      source: normalizeText(rawEntry.source) || "Unknown"
+    };
+
+    const key = entryKey(entry);
+    if (!knownKeys.has(key)) {
+      knownKeys.add(key);
+      state.entries.push(entry);
+    }
+  }
+
+  renderEntries();
+}
+
+function renderProfileSummary() {
+  if (!state.profile) {
+    elements.profileSummary.classList.add("hidden");
+    elements.profileSummary.innerHTML = "";
+    return;
+  }
+
+  const profile = state.profile;
+
+  elements.profileSummary.innerHTML = `
+    <strong>Collector saved:</strong> ${escapeHtml(`${profile.firstName} ${profile.lastName}`)}<br>
+    Preferred method: ${escapeHtml(profile.ingestMethod)}<br>
+    Optional details: age=${escapeHtml(profile.age || "-")}, location=${escapeHtml(profile.location || "-")}, email=${escapeHtml(profile.email || "-")}
+  `;
+  elements.profileSummary.classList.remove("hidden");
+}
+
+function setActiveMode(mode) {
+  state.activeMode = mode;
+
+  elements.tabButtons.forEach((button) => {
+    const active = button.dataset.mode === mode;
+    button.classList.toggle("active", active);
+  });
+
+  elements.modeSections.forEach((section) => {
+    const active = section.id === `mode-${mode}`;
+    section.classList.toggle("hidden", !active);
+  });
+
+  if (mode !== "scrape") {
+    clearScrapeStatus();
+  }
+}
+
+function onProfileSubmit(event) {
+  event.preventDefault();
+
+  if (!elements.profileForm.reportValidity()) {
+    return;
+  }
+
+  const data = new FormData(elements.profileForm);
+
+  state.profile = {
+    age: normalizeText(data.get("age")),
+    email: normalizeText(data.get("email")),
+    firstName: normalizeText(data.get("firstName")),
+    ingestMethod: normalizeText(data.get("ingestMethod")) || "manual",
+    lastName: normalizeText(data.get("lastName")),
+    location: normalizeText(data.get("location"))
+  };
+
+  renderProfileSummary();
+  setActiveMode(state.profile.ingestMethod);
+}
+
+function onManualSubmit(event) {
+  event.preventDefault();
+
+  if (!elements.manualForm.reportValidity()) {
+    return;
+  }
+
+  const data = new FormData(elements.manualForm);
+
+  addEntries([
+    {
+      artworkTitle: data.get("artworkTitle"),
+      artistName: data.get("artistName"),
+      imageUrl: data.get("imageUrl"),
+      source: "Manual"
+    }
+  ]);
+
+  elements.manualForm.reset();
+}
+
+function onPdfSubmit(event) {
+  event.preventDefault();
+
+  if (!elements.pdfForm.reportValidity()) {
+    return;
+  }
+
+  const data = new FormData(elements.pdfForm);
+  const file = data.get("pdfFile");
+  const fallbackImage = data.get("imageUrl");
+
+  addEntries([
+    {
+      artworkTitle: data.get("artworkTitle"),
+      artistName: data.get("artistName"),
+      imageUrl: fallbackImage,
+      source: file && typeof file.name === "string" ? `PDF (${file.name})` : "PDF"
+    }
+  ]);
+
+  elements.pdfForm.reset();
+}
+
+async function onScrapeSubmit(event) {
+  event.preventDefault();
+
+  if (!elements.scrapeForm.reportValidity()) {
+    return;
+  }
+
+  const button = elements.scrapeForm.querySelector("button[type='submit']");
+  const urlValue = normalizeText(new FormData(elements.scrapeForm).get("profileUrl"));
+
+  button.disabled = true;
+  setScrapeStatus("warn", "Scraping in progress...");
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/scrape`, {
+      method: "POST",
+      headers: {
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({
+        url: urlValue
+      })
+    });
+
+    const payload = await response.json();
+
+    if (!response.ok || !payload.ok) {
+      throw new Error(payload.error || "Scrape request failed.");
+    }
+
+    const scrapedEntries = (payload.entries || []).map((entry) => ({
+      ...entry,
+      source: "Scrape"
+    }));
+
+    addEntries(scrapedEntries);
+
+    if (payload.expectedCount == null) {
+      setScrapeStatus("warn", `Scraped ${payload.foundCount} artworks.`);
+    } else if (payload.meetsExpectedCount) {
+      setScrapeStatus(
+        "ok",
+        `Scrape completed: found ${payload.foundCount} artworks, matching expected profile count (${payload.expectedCount}).`
+      );
+    } else {
+      setScrapeStatus(
+        "warn",
+        `Scrape completed: found ${payload.foundCount} artworks, while the profile advertises ${payload.expectedCount}. Some works may be private or currently unavailable.`
+      );
+    }
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "";
+    const fallbackMessage =
+      window.location.protocol === "file:"
+        ? "Cannot reach scraping API from file:// mode. Keep `node server.js` running and open http://127.0.0.1:3000/."
+        : "Unexpected scrape error";
+
+    const userMessage = errorMessage && !/failed to fetch/i.test(errorMessage) ? errorMessage : fallbackMessage;
+    setScrapeStatus("error", userMessage);
+  } finally {
+    button.disabled = false;
+  }
+}
+
+function onClearList() {
+  state.entries = [];
+  renderEntries();
+  clearScrapeStatus();
+}
+
+function bindEvents() {
+  elements.profileForm.addEventListener("submit", onProfileSubmit);
+  elements.manualForm.addEventListener("submit", onManualSubmit);
+  elements.pdfForm.addEventListener("submit", onPdfSubmit);
+  elements.scrapeForm.addEventListener("submit", onScrapeSubmit);
+  elements.clearListButton.addEventListener("click", onClearList);
+
+  elements.tabButtons.forEach((button) => {
+    button.addEventListener("click", () => setActiveMode(button.dataset.mode));
+  });
+}
+
+function init() {
+  bindEvents();
+  setActiveMode("manual");
+  renderEntries();
+}
+
+init();

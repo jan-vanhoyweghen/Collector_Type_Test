@@ -1,0 +1,17 @@
+{
+  "name": "data-entry-profile-module",
+  "version": "0.1.0",
+  "description": "POC data entry browser module linked to a collector profile page",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "check": "node --check server.js && node --check src/scraper.js && node --check public/app.js"
+  },
+  "keywords": [
+    "data-entry",
+    "collector",
+    "scraper",
+    "2dgalleries"
+  ],
+  "license": "MIT"
+}

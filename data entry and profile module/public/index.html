@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Collector DNA · The Narrative Engine</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="bg-shape bg-shape-a" aria-hidden="true"></div>
+    <div class="bg-shape bg-shape-b" aria-hidden="true"></div>
+
+    <main class="app-shell">
+      <header class="hero reveal">
+        <p class="eyebrow">Collector DNA · The Narrative Engine</p>
+        <div class="lang-picker">
+          <label id="languageSelectLabel" for="languageSelect">Taal</label>
+          <select id="languageSelect" aria-label="Kies taal">
+            <option value="nl">Nederlands</option>
+            <option value="en">English</option>
+            <option value="fr">Français</option>
+          </select>
+        </div>
+        <h1 id="heroTitle">Ontdek waarom je verzamelt, niet alleen wat je verzamelt</h1>
+        <p id="heroIntro">
+          Bouw eerst je artwork-bibliotheek, selecteer daarna 9, 12 of 15 topstukken via de
+          <strong>Drie Kamers</strong>, scoor elk stuk op 7 DNA-assen en laat de engine jouw
+          psychologische verzamelprofiel berekenen.
+        </p>
+        <div class="hero-meta">
+          <span id="completionBadge">0 / 15 artworks geselecteerd</span>
+          <span id="heroMetaInfo">7 assen · 10 archetypen · Shadow profiles</span>
+        </div>
+      </header>
+
+      <section class="panel reveal" id="libraryPanel" aria-labelledby="libraryTitle">
+        <div class="panel-head">
+          <h2 id="libraryTitle">Data Entry Module · Artwork Bibliotheek</h2>
+          <p id="libraryIntro">
+            Integreert je data-entry module: voeg artworks toe (manueel of via scrape-link)
+            en selecteer ze daarna per room-slot.
+          </p>
+        </div>
+
+        <p id="pickerTargetInfo" class="picker-target-info">
+          Geen actief doel-slot gekozen. Klik eerst op “Selecteer uit bibliotheek” bij een room-slot.
+        </p>
+
+        <div class="library-layout">
+          <div class="artwork-forms">
+            <form id="manualArtworkForm" class="mini-form" novalidate>
+              <h3 id="manualFormTitle">Manuele invoer</h3>
+              <label for="manualArtworkTitle">Artwork naam</label>
+              <input id="manualArtworkTitle" name="artworkTitle" type="text" required placeholder="Nell Acqua" />
+
+              <label for="manualArtistName">Artist naam</label>
+              <input id="manualArtistName" name="artistName" type="text" required placeholder="Lorenzo Mattotti" />
+
+              <label for="manualImageUrl">Picture URL</label>
+              <input id="manualImageUrl" name="imageUrl" type="url" placeholder="https://example.com/image.jpg" />
+
+              <button id="manualSubmitBtn" class="btn btn-ghost" type="submit">Voeg artwork toe</button>
+            </form>
+
+            <form id="pdfArtworkForm" class="mini-form" novalidate>
+              <h3 id="pdfFormTitle">PDF workflow</h3>
+              <label for="pdfArtworkFile">PDF bestand</label>
+              <input id="pdfArtworkFile" name="pdfFile" type="file" accept="application/pdf" required />
+
+              <label for="pdfImageUrl">Picture URL (optioneel)</label>
+              <input id="pdfImageUrl" name="imageUrl" type="url" placeholder="https://example.com/image.jpg" />
+
+              <p id="pdfHintText" class="pdf-hint">
+                Upload een PDF; de app stelt een lijst kunstwerken voor. Verwijder wat niet klopt en voeg daarna de lijst toe.
+              </p>
+              <div id="pdfProgressWrap" class="pdf-progress hidden" role="status" aria-live="polite">
+                <div class="pdf-progress-head">
+                  <span id="pdfProgressLabel">PDF-analyse bezig...</span>
+                  <span id="pdfProgressValue">0%</span>
+                </div>
+                <div class="pdf-progress-track">
+                  <div id="pdfProgressBar" class="pdf-progress-fill"></div>
+                </div>
+              </div>
+              <p id="pdfSuggestionsTitle" class="pdf-suggestions-title">
+                Voorgestelde kunstwerken uit PDF
+              </p>
+              <ul id="pdfSuggestionsList" class="pdf-suggestions-list hidden" aria-live="polite"></ul>
+              <p id="pdfExtractStatus" class="scrape-status hidden" role="status"></p>
+              <button id="pdfImportAllBtn" class="btn btn-ghost" type="button" hidden>
+                Voeg voorgestelde PDF-lijst toe
+              </button>
+            </form>
+
+            <form id="scrapeArtworkForm" class="mini-form" novalidate>
+              <h3 id="scrapeFormTitle">Scrape vanaf 2DGalleries</h3>
+              <label for="scrapeProfileUrl">Profiel URL</label>
+              <input
+                id="scrapeProfileUrl"
+                name="profileUrl"
+                type="url"
+                required
+                value="https://www.2dgalleries.com/profile/jan"
+                placeholder="https://www.2dgalleries.com/profile/jan"
+              />
+
+              <button id="scrapeSubmitBtn" class="btn btn-ghost" type="submit">Scrape artworks</button>
+              <p id="scrapeArtworkStatus" class="scrape-status hidden" role="status"></p>
+            </form>
+          </div>
+
+          <div class="artwork-list-wrap">
+            <div class="header-row">
+              <h3 id="artworkListTitle">Beschikbare artworks</h3>
+              <button id="clearArtworkListBtn" class="btn btn-ghost" type="button">Wis artworklijst</button>
+            </div>
+            <p id="artworkListMeta" class="muted">0 artworks in bibliotheek</p>
+            <div class="artwork-search-wrap">
+              <label id="artworkSearchLabel" for="artworkSearchInput">Zoek in artworklijst</label>
+              <input
+                id="artworkSearchInput"
+                class="artwork-search-input"
+                type="search"
+                placeholder="Zoek op titel, artiest of bron"
+                autocomplete="off"
+              />
+            </div>
+            <div id="artworkList" class="artwork-list"></div>
+            <p id="artworkEmptyState" class="empty-artwork">
+              Nog geen artworks beschikbaar. Voeg eerst items toe in deze module.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel reveal" id="inputPanel" aria-labelledby="inputTitle">
+        <div class="panel-head">
+          <h2 id="inputTitle">Input-Laag · De Drie Kamers</h2>
+          <p id="inputIntro">
+            Kies 9, 12 of 15 objecten. De app verdeelt die gelijkmatig over de 3 kamers.
+            Elk object krijgt 7 scores op een schaal van 1 (laag) tot 5 (hoog).
+          </p>
+        </div>
+
+        <div class="pieces-picker">
+          <label for="piecesCountSelect" class="control-label">Aantal objecten voor analyse</label>
+          <select id="piecesCountSelect" class="pieces-select" aria-label="Kies aantal objecten">
+            <option value="15">15 (volledig profiel)</option>
+            <option value="12">12</option>
+            <option value="9">9</option>
+          </select>
+        </div>
+
+        <div class="entry-toolbar">
+          <p id="entryHint" class="entry-hint">
+            Kamer 1 van 3 · Duplicaten zijn toegestaan indien dat inhoudelijk klopt.
+          </p>
+          <p id="saveState" class="save-state" role="status"></p>
+        </div>
+
+        <nav id="chamberTabs" class="chamber-tabs" aria-label="Kies een kamer"></nav>
+
+        <div class="chamber-nav">
+          <button id="prevChamberBtn" class="btn btn-ghost" type="button">Vorige kamer</button>
+          <button id="nextChamberBtn" class="btn btn-ghost" type="button">Volgende kamer</button>
+        </div>
+
+        <div id="chambersContainer" class="chambers" aria-live="polite"></div>
+
+        <div class="actions">
+          <button id="analyzeBtn" class="btn btn-primary">Analyseer mijn DNA</button>
+          <button id="demoBtn" class="btn btn-ghost">Laad voorbeeldprofiel</button>
+          <button id="resetBtn" class="btn btn-ghost">Reset formulier</button>
+        </div>
+        <p id="validationMessage" class="validation" role="status"></p>
+      </section>
+
+      <section class="panel reveal" id="resultsPanel" hidden aria-labelledby="resultsTitle">
+        <div class="panel-head">
+          <h2 id="resultsTitle">Interpretatie-Laag · Jouw DNA-rapport</h2>
+          <p id="resultsIntro">
+            Radar chart, primair archetype, shadow analysis, DNA-mix en technische JSON-output.
+          </p>
+        </div>
+
+        <div class="results-grid">
+          <article class="card">
+            <h3 id="radarCardTitle">DNA-Vingerafdruk</h3>
+            <canvas id="radarChart" width="520" height="520" aria-label="Radar chart van de 7 DNA-assen"></canvas>
+          </article>
+
+          <article class="card" id="archetypeCard">
+            <h3 id="archetypeCardTitle">Primair Archetype</h3>
+            <p id="archetypeMatchLabel" class="label">Match</p>
+            <h4 id="archetypeName">-</h4>
+            <p id="archetypeMotto" class="motto">-</p>
+            <p id="archetypeDescription">-</p>
+            <p id="archetypeDistance" class="muted"></p>
+            <p id="profileDistributionLabel" class="label">Profielverdeling</p>
+            <ul id="profileDistributionList" class="clean-list compact-list"></ul>
+          </article>
+
+          <article class="card" id="shadowCard">
+            <h3 id="shadowCardTitle">Shadow Analysis</h3>
+            <p id="shadowCardLabel" class="label">Jouw actieve nee</p>
+            <ul id="shadowList" class="clean-list"></ul>
+          </article>
+
+          <article class="card" id="mixCard">
+            <h3 id="mixCardTitle">DNA-Mix</h3>
+            <p id="topDrivers" class="muted"></p>
+            <p id="keyRejection" class="muted"></p>
+            <p id="statusLine" class="muted"></p>
+            <div id="mixBars" class="mix-bars"></div>
+          </article>
+
+          <article class="card full-width" id="profileCatalogCard">
+            <h3 id="profileCatalogTitle">Alle profieltypes</h3>
+            <div id="profileCatalogList" class="profile-catalog-list"></div>
+          </article>
+
+          <article class="card full-width" id="jsonCard">
+            <h3 id="jsonCardTitle">JSON Data-structuur</h3>
+            <pre id="jsonOutput" class="json-output"></pre>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

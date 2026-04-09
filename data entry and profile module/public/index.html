@@ -214,6 +214,29 @@
             <div id="mixBars" class="mix-bars"></div>
           </article>
 
+          <article class="card full-width" id="representativeCard">
+            <h3 id="representativeCardTitle">Representativiteit van kunstwerken</h3>
+            <div id="representativeList" class="representative-list"></div>
+            <div class="representative-contribution-block">
+              <h4 id="representativeContributionTitle">Bijdrage per kunstwerk (lollipop)</h4>
+              <p id="representativeContributionIntro" class="muted">
+                Hoe hoger een werk scoort, hoe sterker het je profiel mee bepaalt. Werken boven Q3 zijn het meest
+                representatief; werken onder Q1 dragen het minst bij.
+              </p>
+              <canvas
+                id="contributionChart"
+                width="520"
+                height="520"
+                aria-label="Bijdrage per kunstwerk aan het profiel"
+              ></canvas>
+              <p id="contributionChartLegend" class="muted">
+                Gesorteerde lollipop chart (laag naar hoog): elk punt = één kunstwerk (9, 12 of 15). Q1, mediaan en Q3
+                tonen de boxplot-drempels.
+              </p>
+              <p id="contributionChartSummary" class="muted"></p>
+            </div>
+          </article>
+
           <article class="card full-width" id="profileCatalogCard">
             <h3 id="profileCatalogTitle">Alle profieltypes</h3>
             <div id="profileCatalogList" class="profile-catalog-list"></div>
@@ -226,6 +249,8 @@
         </div>
       </section>
     </main>
+
+    <div id="contributionPointTooltip" class="chart-point-tooltip" hidden></div>
 
     <script src="app.js"></script>
   </body>

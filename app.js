@@ -214,12 +214,40 @@ const UI_I18N = {
     resultsTitle: "Interpretatie-Laag · Jouw DNA-rapport",
     resultsIntro: "Radar chart, primair archetype, shadow analysis, DNA-mix en technische JSON-output.",
     radarCardTitle: "DNA-Vingerafdruk",
+    diagramModeProfile: "Totaalprofiel",
+    diagramModeContribution: "Lollipop bijdragen",
+    contributionLegend:
+      "Lollipop (laag naar hoog): elk punt = één kunstwerk. Q1-Q3 toont de middenzone; boven Q3 = sterkste bijdrage, onder Q1 = laagste bijdrage.",
+    contributionAxisX: "Kunstwerken (gesorteerd laag -> hoog)",
+    contributionAxisY: "Bijdrage-score",
+    contributionSpotLabel: "Middenzone (Q1-Q3)",
+    contributionInSpot: "Binnen Q1-Q3 (stabiele bijdrage)",
+    contributionOutSpot: "Onder Q1 (laagste bijdrage)",
+    contributionAboveBox: "Boven Q3 (sterkste bijdrage)",
+    contributionOutlier: "Uitschieter",
+    contributionTopAxes: "Sterkste assen",
+    contributionStats:
+      "Min {min} · Q1 {q1} · Mediaan {median} · Q3 {q3} · Max {max} · IQR {iqr}",
+    contributionSummary:
+      "Verdeling: {inside}/{total} werken in Q1-Q3, {below} onder Q1 (laagste bijdrage), {above} boven Q3 (sterkste bijdrage), uitschieters: {outliers}. Sterkste bijdrage: {top}.",
     archetypeCardTitle: "Primair Archetype",
     archetypeMatchLabel: "Match",
     profileDistributionLabel: "Profielverdeling",
     shadowCardTitle: "Shadow Analysis",
     shadowCardLabel: "Jouw actieve nee",
     profileCatalogTitle: "Alle profieltypes",
+    representativeCardTitle: "Representativiteit van kunstwerken",
+    representativeContributionTitle: "Bijdrage per kunstwerk (lollipop)",
+    representativeContributionIntro:
+      "Hoe hoger een werk scoort, hoe sterker het je profiel mee bepaalt. Boven Q3 = meest representatief; onder Q1 = minst representatief.",
+    representativeMostLabel: "Meest representatief werk",
+    representativeLeastLabel: "Minst representatief werk",
+    representativeDistanceLabel: "Afstand tot DNA-profiel",
+    representativeImpactLabel: "Impact op profielvorm",
+    representativeContributionScoreLabel: "Bijdrage-score",
+    representativeFallbackTitle: "Ongetiteld artwork",
+    representativeNoData:
+      "Nog geen representativiteitsdata beschikbaar. Vul eerst alle kamers en start daarna de analyse.",
     mixCardTitle: "DNA-Mix",
     jsonCardTitle: "JSON Data-structuur",
     manualSubmit: "Voeg artwork toe",
@@ -296,12 +324,40 @@ const UI_I18N = {
     resultsTitle: "Interpretation Layer · Your DNA Report",
     resultsIntro: "Radar chart, primary archetype, shadow analysis, DNA mix, and technical JSON output.",
     radarCardTitle: "DNA Fingerprint",
+    diagramModeProfile: "Overall profile",
+    diagramModeContribution: "Lollipop contribution",
+    contributionLegend:
+      "Lollipop (low to high): each point = one artwork. Q1-Q3 is the middle zone; above Q3 = strongest contribution, below Q1 = lowest contribution.",
+    contributionAxisX: "Artworks (sorted low -> high)",
+    contributionAxisY: "Contribution score",
+    contributionSpotLabel: "Middle zone (Q1-Q3)",
+    contributionInSpot: "Inside Q1-Q3 (stable contribution)",
+    contributionOutSpot: "Below Q1 (lowest contribution)",
+    contributionAboveBox: "Above Q3 (strongest contribution)",
+    contributionOutlier: "Outlier",
+    contributionTopAxes: "Strongest axes",
+    contributionStats:
+      "Min {min} · Q1 {q1} · Median {median} · Q3 {q3} · Max {max} · IQR {iqr}",
+    contributionSummary:
+      "Distribution: {inside}/{total} works in Q1-Q3, {below} below Q1 (lowest contribution), {above} above Q3 (strongest contribution), outliers: {outliers}. Strongest contribution: {top}.",
     archetypeCardTitle: "Primary Archetype",
     archetypeMatchLabel: "Match",
     profileDistributionLabel: "Profile distribution",
     shadowCardTitle: "Shadow Analysis",
     shadowCardLabel: "Your active no",
     profileCatalogTitle: "All profile types",
+    representativeCardTitle: "Artwork representativeness",
+    representativeContributionTitle: "Contribution per artwork (lollipop)",
+    representativeContributionIntro:
+      "The higher a work scores, the more it shapes your profile. Above Q3 = most representative; below Q1 = least representative.",
+    representativeMostLabel: "Most representative piece",
+    representativeLeastLabel: "Least representative piece",
+    representativeDistanceLabel: "Distance to DNA profile",
+    representativeImpactLabel: "Impact on profile shape",
+    representativeContributionScoreLabel: "Contribution score",
+    representativeFallbackTitle: "Untitled artwork",
+    representativeNoData:
+      "No representativeness data yet. Complete all chambers first and then run the analysis.",
     mixCardTitle: "DNA Mix",
     jsonCardTitle: "JSON Data Structure",
     manualSubmit: "Add artwork",
@@ -378,12 +434,40 @@ const UI_I18N = {
     resultsTitle: "Couche d'Interprétation · Votre Rapport ADN",
     resultsIntro: "Radar chart, archétype principal, analyse d'ombre, mix ADN et sortie JSON technique.",
     radarCardTitle: "Empreinte ADN",
+    diagramModeProfile: "Profil global",
+    diagramModeContribution: "Contribution lollipop",
+    contributionLegend:
+      "Lollipop (faible à élevé) : chaque point = une oeuvre. Q1-Q3 est la zone centrale ; au-dessus de Q3 = contribution la plus forte, sous Q1 = contribution la plus faible.",
+    contributionAxisX: "Oeuvres (triées faible -> élevé)",
+    contributionAxisY: "Score de contribution",
+    contributionSpotLabel: "Zone médiane (Q1-Q3)",
+    contributionInSpot: "Dans Q1-Q3 (contribution stable)",
+    contributionOutSpot: "Sous Q1 (contribution la plus faible)",
+    contributionAboveBox: "Au-dessus de Q3 (contribution la plus forte)",
+    contributionOutlier: "Valeur aberrante",
+    contributionTopAxes: "Axes dominants",
+    contributionStats:
+      "Min {min} · Q1 {q1} · Médiane {median} · Q3 {q3} · Max {max} · IQR {iqr}",
+    contributionSummary:
+      "Distribution : {inside}/{total} oeuvres dans Q1-Q3, {below} sous Q1 (contribution la plus faible), {above} au-dessus de Q3 (contribution la plus forte), valeurs aberrantes : {outliers}. Contribution la plus forte : {top}.",
     archetypeCardTitle: "Archétype Principal",
     archetypeMatchLabel: "Correspondance",
     profileDistributionLabel: "Répartition des profils",
     shadowCardTitle: "Analyse d'Ombre",
     shadowCardLabel: "Votre non actif",
     profileCatalogTitle: "Tous les types de profils",
+    representativeCardTitle: "Représentativité des oeuvres",
+    representativeContributionTitle: "Contribution par oeuvre (lollipop)",
+    representativeContributionIntro:
+      "Plus une oeuvre score haut, plus elle façonne votre profil. Au-dessus de Q3 = plus représentative ; sous Q1 = moins représentative.",
+    representativeMostLabel: "Oeuvre la plus représentative",
+    representativeLeastLabel: "Oeuvre la moins représentative",
+    representativeDistanceLabel: "Distance au profil ADN",
+    representativeImpactLabel: "Impact sur la forme du profil",
+    representativeContributionScoreLabel: "Score de contribution",
+    representativeFallbackTitle: "Oeuvre sans titre",
+    representativeNoData:
+      "Pas encore de données de représentativité. Complétez d'abord toutes les chambres puis lancez l'analyse.",
     mixCardTitle: "Mix ADN",
     jsonCardTitle: "Structure JSON",
     manualSubmit: "Ajouter l'oeuvre",
@@ -1124,7 +1208,8 @@ const state = {
   slotsPerChamber: DEFAULT_SLOTS_PER_CHAMBER,
   pickerTargetEntryId: null,
   activeChamber: CHAMBERS[0].key,
-  lastReport: null
+  lastReport: null,
+  reportDiagramMode: "profile"
 };
 
 let saveTimer = null;
@@ -1132,6 +1217,7 @@ let eventsBound = false;
 let pdfProgressTimer = null;
 let pdfProgressCurrentValue = 0;
 let pdfProgressIsActive = false;
+let contributionScatterModel = null;
 
 const elements = {
   languageSelect: document.getElementById("languageSelect"),
@@ -1166,7 +1252,13 @@ const elements = {
   demoBtn: document.getElementById("demoBtn"),
   resetBtn: document.getElementById("resetBtn"),
   resultsPanel: document.getElementById("resultsPanel"),
+  diagramModeProfileBtn: document.getElementById("diagramModeProfileBtn"),
+  diagramModeContributionBtn: document.getElementById("diagramModeContributionBtn"),
   radarChart: document.getElementById("radarChart"),
+  contributionChart: document.getElementById("contributionChart"),
+  contributionChartLegend: document.getElementById("contributionChartLegend"),
+  contributionChartSummary: document.getElementById("contributionChartSummary"),
+  contributionPointTooltip: document.getElementById("contributionPointTooltip"),
   archetypeName: document.getElementById("archetypeName"),
   archetypeMotto: document.getElementById("archetypeMotto"),
   archetypeDescription: document.getElementById("archetypeDescription"),
@@ -1176,6 +1268,10 @@ const elements = {
   shadowList: document.getElementById("shadowList"),
   profileCatalogTitle: document.getElementById("profileCatalogTitle"),
   profileCatalogList: document.getElementById("profileCatalogList"),
+  representativeCardTitle: document.getElementById("representativeCardTitle"),
+  representativeContributionTitle: document.getElementById("representativeContributionTitle"),
+  representativeContributionIntro: document.getElementById("representativeContributionIntro"),
+  representativeList: document.getElementById("representativeList"),
   topDrivers: document.getElementById("topDrivers"),
   keyRejection: document.getElementById("keyRejection"),
   statusLine: document.getElementById("statusLine"),
@@ -1187,6 +1283,7 @@ initialize();
 
 function initialize() {
   loadDraft();
+  attachEvents();
   if (elements.languageSelect instanceof HTMLSelectElement) {
     elements.languageSelect.value = state.locale;
   }
@@ -1200,7 +1297,6 @@ function initialize() {
   syncChamberUi();
   renderArtworkLibrary();
   clearPdfSuggestionCache();
-  attachEvents();
 
   if (!elements.saveState.textContent) {
     setSaveStatus(tr("autosaveActive"));
@@ -1498,6 +1594,18 @@ function applyLocaleToStaticUi() {
   if (radarCardTitle) {
     radarCardTitle.textContent = tr("radarCardTitle");
   }
+  if (elements.diagramModeProfileBtn) {
+    elements.diagramModeProfileBtn.textContent = tr("diagramModeProfile");
+  }
+  if (elements.diagramModeContributionBtn) {
+    elements.diagramModeContributionBtn.textContent = tr("diagramModeContribution");
+  }
+  if (elements.contributionChartLegend) {
+    elements.contributionChartLegend.textContent = tr("contributionLegend");
+  }
+  if (elements.contributionChartSummary && !elements.contributionChartSummary.textContent) {
+    elements.contributionChartSummary.textContent = "";
+  }
   if (archetypeCardTitle) {
     archetypeCardTitle.textContent = tr("archetypeCardTitle");
   }
@@ -1515,6 +1623,15 @@ function applyLocaleToStaticUi() {
   }
   if (elements.profileCatalogTitle) {
     elements.profileCatalogTitle.textContent = tr("profileCatalogTitle");
+  }
+  if (elements.representativeCardTitle) {
+    elements.representativeCardTitle.textContent = tr("representativeCardTitle");
+  }
+  if (elements.representativeContributionTitle) {
+    elements.representativeContributionTitle.textContent = tr("representativeContributionTitle");
+  }
+  if (elements.representativeContributionIntro) {
+    elements.representativeContributionIntro.textContent = tr("representativeContributionIntro");
   }
   if (mixCardTitle) {
     mixCardTitle.textContent = tr("mixCardTitle");
@@ -1623,9 +1740,20 @@ function applyLocaleToStaticUi() {
       t3("Radar chart van de 7 DNA-assen", "Radar chart of the 7 DNA axes", "Graphique radar des 7 axes ADN")
     );
   }
+  if (elements.contributionChart instanceof HTMLCanvasElement) {
+    elements.contributionChart.setAttribute(
+      "aria-label",
+      t3(
+        "Lollipopdiagram met bijdragen per kunstwerk",
+        "Lollipop chart with contributions per artwork",
+        "Diagramme lollipop avec contributions par oeuvre"
+      )
+    );
+  }
 
   renderPdfSuggestions();
   updatePdfImportAllButton();
+  applyReportDiagramModeUi();
   if (elements.pdfProgressWrap instanceof HTMLElement && !elements.pdfProgressWrap.classList.contains("hidden")) {
     if (pdfProgressIsActive) {
       setPdfProgressLabel(tr("pdfProgressAnalyzing"));
@@ -1963,6 +2091,18 @@ function attachEvents() {
     stepChamber(1);
   });
 
+  if (elements.diagramModeProfileBtn instanceof HTMLButtonElement) {
+    elements.diagramModeProfileBtn.addEventListener("click", () => {
+      setReportDiagramMode("profile", { persist: true });
+    });
+  }
+
+  if (elements.diagramModeContributionBtn instanceof HTMLButtonElement) {
+    elements.diagramModeContributionBtn.addEventListener("click", () => {
+      setReportDiagramMode("contribution", { persist: true });
+    });
+  }
+
   elements.analyzeBtn.addEventListener("click", () => {
     runAnalysisWorkflow({ autoTriggered: false });
   });
@@ -2293,9 +2433,18 @@ function attachEvents() {
     assignArtworkToTarget(artworkId);
   });
 
+  if (elements.contributionChart instanceof HTMLCanvasElement) {
+    elements.contributionChart.addEventListener("mousemove", (event) => {
+      handleContributionChartPointerMove(event);
+    });
+    elements.contributionChart.addEventListener("mouseleave", () => {
+      handleContributionChartPointerLeave();
+    });
+  }
+
   window.addEventListener("resize", () => {
     if (!elements.resultsPanel.hidden && state.lastReport) {
-      drawRadarChart(elements.radarChart, state.lastReport.averages);
+      drawActiveReportDiagram(state.lastReport);
     }
   });
 }
@@ -2463,6 +2612,8 @@ function buildReport(entries) {
   const mix = calculateMix(averages);
   const shadow = computeShadow(averages);
   const status = deriveStatus(averages);
+  const artworkContributions = calculateArtworkContributions(entries, averages);
+  const representative = deriveRepresentativeArtworks(artworkContributions);
 
   return {
     averages,
@@ -2471,6 +2622,8 @@ function buildReport(entries) {
     mix,
     shadow,
     status,
+    artworkContributions,
+    representative,
     topDrivers: mix.slice(0, 3),
     keyRejection: mix[mix.length - 1],
     jsonPayload: buildJsonPayload(entries)
@@ -2507,12 +2660,148 @@ function buildJsonPayload(entries) {
 }
 
 function calculateArchetypeDistance(averages, archetype) {
+  return calculateEuclideanDistance(averages, archetype.scores);
+}
+
+function calculateEuclideanDistance(vectorA, vectorB) {
   return Math.sqrt(
     AXES.reduce((sum, axis) => {
-      const delta = averages[axis.key] - archetype.scores[axis.key];
+      const a = Number(vectorA?.[axis.key]) || 0;
+      const b = Number(vectorB?.[axis.key]) || 0;
+      const delta = a - b;
       return sum + delta * delta;
     }, 0)
   );
+}
+
+function averageEntriesScores(entries) {
+  if (!Array.isArray(entries) || entries.length === 0) {
+    return AXES.reduce((acc, axis) => {
+      acc[axis.key] = 0;
+      return acc;
+    }, {});
+  }
+
+  return AXES.reduce((acc, axis) => {
+    const total = entries.reduce((sum, entry) => sum + (Number(entry?.scores?.[axis.key]) || 0), 0);
+    acc[axis.key] = total / entries.length;
+    return acc;
+  }, {});
+}
+
+function calculateArtworkContributions(entries, averages) {
+  if (!Array.isArray(entries) || entries.length === 0) {
+    return [];
+  }
+
+  const totalVolume = entries.reduce(
+    (sum, entry) =>
+      sum +
+      AXES.reduce((axisSum, axis) => axisSum + (Number(entry?.scores?.[axis.key]) || 0), 0),
+    0
+  );
+
+  const raw = entries.map((entry, index) => {
+    const entryScores = normalizeScores(entry.scores);
+    const selectedArtwork = getArtworkById(entry.selectedArtworkId);
+    const titleSeed = selectedArtwork ? selectedArtwork.artworkTitle : normalizeText(entry.objectName);
+    const artistSeed = selectedArtwork ? selectedArtwork.artistName : "";
+    const imageUrl = selectedArtwork ? selectedArtwork.imageUrl : "";
+    const source = selectedArtwork ? selectedArtwork.source : "";
+
+    const volume = AXES.reduce((sum, axis) => sum + entryScores[axis.key], 0);
+    const otherEntries = entries.filter((_item, otherIndex) => otherIndex !== index);
+    const withoutAverage = averageEntriesScores(otherEntries);
+    const impactDistance =
+      otherEntries.length > 0
+        ? calculateEuclideanDistance(averages, withoutAverage)
+        : calculateEuclideanDistance(averages, entryScores);
+    const distanceToProfile = calculateEuclideanDistance(entryScores, averages);
+    const axisContribution = AXES.reduce((acc, axis) => {
+      acc[axis.key] = round3(entryScores[axis.key] / entries.length);
+      return acc;
+    }, {});
+
+    return {
+      entryId: entry.id,
+      chamber: entry.chamber,
+      slot: entry.slot,
+      artworkTitle: titleSeed,
+      artistName: artistSeed,
+      imageUrl,
+      source,
+      scores: { ...entryScores },
+      volume,
+      distanceToProfile,
+      impactDistance,
+      axisContribution
+    };
+  });
+
+  const totalImpactDistance = raw.reduce((sum, item) => sum + item.impactDistance, 0);
+  const fallbackShare = round1(100 / raw.length);
+
+  const enriched = raw.map((item) => ({
+    ...item,
+    volumeShare: totalVolume > 0 ? round1((item.volume / totalVolume) * 100) : fallbackShare,
+    impactShare:
+      totalImpactDistance > 0 ? round1((item.impactDistance / totalImpactDistance) * 100) : fallbackShare,
+    distanceToProfile: round3(item.distanceToProfile),
+    impactDistance: round3(item.impactDistance)
+  }));
+
+  const summedImpact = enriched.reduce((sum, item) => sum + item.impactShare, 0);
+  const correction = round1(100 - summedImpact);
+  if (Math.abs(correction) >= 0.1 && enriched.length > 0) {
+    enriched[0].impactShare = round1(enriched[0].impactShare + correction);
+  }
+
+  const summedVolume = enriched.reduce((sum, item) => sum + item.volumeShare, 0);
+  const volumeCorrection = round1(100 - summedVolume);
+  if (Math.abs(volumeCorrection) >= 0.1 && enriched.length > 0) {
+    enriched[0].volumeShare = round1(enriched[0].volumeShare + volumeCorrection);
+  }
+
+  const maxDistance = enriched.reduce(
+    (maxValue, item) => Math.max(maxValue, Number(item.distanceToProfile) || 0),
+    0
+  );
+  enriched.forEach((item) => {
+    const normalizedDistance = maxDistance > 0 ? (Number(item.distanceToProfile) || 0) / maxDistance : 0;
+    const coherenceFactor = Math.max(0, 1 - normalizedDistance);
+    item.profileContributionScore = round2((Number(item.impactShare) || 0) * coherenceFactor);
+  });
+
+  return enriched.sort(
+    (a, b) => b.volumeShare - a.volumeShare || b.impactShare - a.impactShare || a.distanceToProfile - b.distanceToProfile
+  );
+}
+
+function deriveRepresentativeArtworks(artworkContributions) {
+  if (!Array.isArray(artworkContributions) || artworkContributions.length === 0) {
+    return {
+      most: null,
+      least: null
+    };
+  }
+
+  const rankedMost = [...artworkContributions].sort(
+    (a, b) =>
+      (Number(b.profileContributionScore) || 0) - (Number(a.profileContributionScore) || 0) ||
+      (Number(b.impactShare) || 0) - (Number(a.impactShare) || 0) ||
+      (Number(a.distanceToProfile) || 0) - (Number(b.distanceToProfile) || 0)
+  );
+  const rankedLeast = [...artworkContributions].sort(
+    (a, b) =>
+      (Number(a.profileContributionScore) || 0) - (Number(b.profileContributionScore) || 0) ||
+      (Number(a.impactShare) || 0) - (Number(b.impactShare) || 0) ||
+      (Number(b.distanceToProfile) || 0) - (Number(a.distanceToProfile) || 0)
+  );
+
+  return {
+    most: rankedMost[0] || null,
+    least: rankedLeast[0] || null
+  };
 }
 
 function rankArchetypes(averages) {
@@ -2787,8 +3076,585 @@ function renderReport(report) {
 
   elements.jsonOutput.textContent = JSON.stringify(report.jsonPayload, null, 2);
 
-  drawRadarChart(elements.radarChart, report.averages);
+  renderRepresentativeSummary(report);
+  drawActiveReportDiagram(report);
   elements.resultsPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function applyReportDiagramModeUi() {
+  if (elements.radarChart instanceof HTMLCanvasElement) {
+    elements.radarChart.hidden = false;
+  }
+
+  if (elements.contributionChart instanceof HTMLCanvasElement) {
+    elements.contributionChart.hidden = false;
+  }
+
+  if (elements.contributionChartLegend instanceof HTMLElement) {
+    elements.contributionChartLegend.hidden = false;
+  }
+
+  if (elements.contributionChartSummary instanceof HTMLElement) {
+    elements.contributionChartSummary.hidden = false;
+  }
+}
+
+function setReportDiagramMode(mode, options = {}) {
+  const nextMode = "profile";
+  const modeChanged = state.reportDiagramMode !== nextMode;
+  state.reportDiagramMode = nextMode;
+
+  applyReportDiagramModeUi();
+
+  if (!elements.resultsPanel.hidden && state.lastReport) {
+    drawActiveReportDiagram(state.lastReport);
+  }
+
+  if (modeChanged && options.persist) {
+    scheduleSave();
+  }
+}
+
+function drawActiveReportDiagram(report) {
+  applyReportDiagramModeUi();
+  drawRadarChart(elements.radarChart, report.averages);
+  drawContributionChart(elements.contributionChart, report);
+}
+
+function getStrongestAxesText(scores, limit = 2) {
+  const normalizedScores = normalizeScores(scores);
+  const ranked = AXES.map((axis) => ({
+    axis: axis.key,
+    value: Number(normalizedScores[axis.key]) || 0
+  })).sort((a, b) => b.value - a.value);
+
+  return ranked
+    .slice(0, Math.max(1, limit))
+    .map((item) => `${getAxisLabel(item.axis)} (${item.value})`)
+    .join(", ");
+}
+
+function quantile(numbers, q) {
+  const values = (Array.isArray(numbers) ? numbers : [])
+    .map((value) => Number(value))
+    .filter((value) => Number.isFinite(value))
+    .sort((a, b) => a - b);
+  if (values.length === 0) {
+    return 0;
+  }
+  if (values.length === 1) {
+    return values[0];
+  }
+
+  const clampedQ = Math.max(0, Math.min(1, Number(q)));
+  const position = (values.length - 1) * clampedQ;
+  const lower = Math.floor(position);
+  const upper = Math.ceil(position);
+  if (lower === upper) {
+    return values[lower];
+  }
+  const weight = position - lower;
+  return values[lower] * (1 - weight) + values[upper] * weight;
+}
+
+function computeBoxplotStats(values) {
+  const list = (Array.isArray(values) ? values : [])
+    .map((value) => Number(value))
+    .filter((value) => Number.isFinite(value))
+    .sort((a, b) => a - b);
+
+  if (list.length === 0) {
+    return {
+      min: 0,
+      q1: 0,
+      median: 0,
+      q3: 0,
+      max: 0,
+      iqr: 0,
+      lowerFence: 0,
+      upperFence: 0,
+      whiskerMin: 0,
+      whiskerMax: 0,
+      outlierValues: []
+    };
+  }
+
+  const min = list[0];
+  const max = list[list.length - 1];
+  const q1 = quantile(list, 0.25);
+  const median = quantile(list, 0.5);
+  const q3 = quantile(list, 0.75);
+  const iqr = q3 - q1;
+  const lowerFence = q1 - 1.5 * iqr;
+  const upperFence = q3 + 1.5 * iqr;
+
+  const inWhiskers = list.filter((value) => value >= lowerFence && value <= upperFence);
+  const whiskerMin = inWhiskers.length > 0 ? inWhiskers[0] : min;
+  const whiskerMax = inWhiskers.length > 0 ? inWhiskers[inWhiskers.length - 1] : max;
+  const outlierValues = list.filter((value) => value < lowerFence || value > upperFence);
+
+  return {
+    min,
+    q1,
+    median,
+    q3,
+    max,
+    iqr,
+    lowerFence,
+    upperFence,
+    whiskerMin,
+    whiskerMax,
+    outlierValues
+  };
+}
+
+function getNiceTickStep(range, targetTicks = 6) {
+  const safeRange = Math.max(1e-6, Number(range) || 0);
+  const roughStep = safeRange / Math.max(2, targetTicks);
+  const exponent = Math.floor(Math.log10(roughStep));
+  const base = Math.pow(10, exponent);
+  const normalized = roughStep / base;
+  let niceMultiplier = 1;
+  if (normalized <= 1) {
+    niceMultiplier = 1;
+  } else if (normalized <= 2) {
+    niceMultiplier = 2;
+  } else if (normalized <= 5) {
+    niceMultiplier = 5;
+  } else {
+    niceMultiplier = 10;
+  }
+  return niceMultiplier * base;
+}
+
+function drawContributionChart(canvas, report) {
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    return;
+  }
+
+  hideContributionChartTooltip();
+
+  const rawItems = Array.isArray(report?.artworkContributions) ? report.artworkContributions : [];
+  const items = [...rawItems].sort((a, b) => {
+    const aScore = Number(a.profileContributionScore) || 0;
+    const bScore = Number(b.profileContributionScore) || 0;
+    if (aScore !== bScore) {
+      return aScore - bScore;
+    }
+    return String(a.entryId || "").localeCompare(String(b.entryId || ""));
+  });
+  const values = items.map((item) => Number(item.profileContributionScore) || 0);
+  const stats = computeBoxplotStats(values);
+  const ratio = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  const width = Math.max(320, rect.width || 520);
+  const chartHeight = Math.max(280, Math.round(width * 0.54));
+  const margin = {
+    top: 20,
+    right: 20,
+    bottom: 56,
+    left: 68
+  };
+  const chartArea = {
+    x: margin.left,
+    y: margin.top,
+    width: Math.max(120, width - margin.left - margin.right),
+    height: Math.max(120, chartHeight - margin.top - margin.bottom)
+  };
+
+  canvas.width = width * ratio;
+  canvas.height = chartHeight * ratio;
+  ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  ctx.clearRect(0, 0, width, chartHeight);
+  contributionScatterModel = null;
+
+  if (items.length === 0) {
+    ctx.fillStyle = "#5d5048";
+    ctx.font = "14px IBM Plex Sans, Segoe UI, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(tr("representativeNoData"), width / 2, chartHeight / 2);
+    if (elements.contributionChartSummary instanceof HTMLElement) {
+      elements.contributionChartSummary.textContent = tr("representativeNoData");
+    }
+    canvas.style.cursor = "default";
+    return;
+  }
+
+  let scaleMin = stats.min;
+  let scaleMax = stats.max;
+  if (scaleMin === scaleMax) {
+    scaleMin -= 1;
+    scaleMax += 1;
+  }
+  const padding = Math.max(0.6, (scaleMax - scaleMin) * 0.18);
+  scaleMin -= padding;
+  scaleMax += padding;
+
+  const mapY = (value) => {
+    const normalized = (Number(value) - scaleMin) / Math.max(1e-6, scaleMax - scaleMin);
+    return chartArea.y + chartArea.height - Math.max(0, Math.min(1, normalized)) * chartArea.height;
+  };
+
+  const slotWidth = chartArea.width / Math.max(1, items.length);
+  const mapX = (index) => chartArea.x + slotWidth * (index + 0.5);
+  const baselineY = mapY(stats.median);
+  const yQ1 = mapY(stats.q1);
+  const yMedian = mapY(stats.median);
+  const yQ3 = mapY(stats.q3);
+  const yTop = chartArea.y;
+  const yBottom = chartArea.y + chartArea.height;
+
+  ctx.strokeStyle = "#d9c8ae";
+  ctx.lineWidth = 1;
+  ctx.fillStyle = "#5f5247";
+  ctx.font = "11px IBM Plex Sans, Segoe UI, sans-serif";
+
+  const yRange = scaleMax - scaleMin;
+  const step = getNiceTickStep(yRange, 6);
+  const startTick = Math.ceil(scaleMin / step) * step;
+  for (let value = startTick; value <= scaleMax + step * 0.5; value += step) {
+    const y = mapY(value);
+    ctx.beginPath();
+    ctx.moveTo(chartArea.x, y);
+    ctx.lineTo(chartArea.x + chartArea.width, y);
+    ctx.stroke();
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    ctx.fillText(`${round2(value)}`, chartArea.x - 8, y);
+  }
+
+  ctx.fillStyle = "#f7d9c844";
+  ctx.fillRect(chartArea.x, yQ1, chartArea.width, yBottom - yQ1);
+  ctx.fillStyle = "#0f6f6420";
+  ctx.fillRect(chartArea.x, yQ3, chartArea.width, yQ1 - yQ3);
+  ctx.fillStyle = "#d8efcf44";
+  ctx.fillRect(chartArea.x, yTop, chartArea.width, yQ3 - yTop);
+
+  const quartileLines = [
+    { y: yQ1, label: "Q1", color: "#886d4d" },
+    { y: yMedian, label: t3("Mediaan", "Median", "Médiane"), color: "#234a45" },
+    { y: yQ3, label: "Q3", color: "#5a7a56" }
+  ];
+  quartileLines.forEach((line) => {
+    ctx.beginPath();
+    ctx.moveTo(chartArea.x, line.y);
+    ctx.lineTo(chartArea.x + chartArea.width, line.y);
+    ctx.strokeStyle = line.color;
+    ctx.lineWidth = 1.6;
+    ctx.setLineDash([5, 4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  });
+
+  ctx.strokeStyle = "#8e7b61";
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.moveTo(chartArea.x, chartArea.y + chartArea.height);
+  ctx.lineTo(chartArea.x + chartArea.width, chartArea.y + chartArea.height);
+  ctx.moveTo(chartArea.x, chartArea.y);
+  ctx.lineTo(chartArea.x, chartArea.y + chartArea.height);
+  ctx.stroke();
+
+  ctx.fillStyle = "#5b4d43";
+  ctx.font = "12px IBM Plex Sans, Segoe UI, sans-serif";
+  ctx.save();
+  ctx.translate(chartArea.x - 54, chartArea.y + chartArea.height / 2);
+  ctx.rotate(-Math.PI / 2);
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+  ctx.fillText(tr("contributionAxisY"), 0, 0);
+  ctx.restore();
+
+  ctx.strokeStyle = "#7f786f";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(chartArea.x, baselineY);
+  ctx.lineTo(chartArea.x + chartArea.width, baselineY);
+  ctx.stroke();
+
+  const points = items.map((item, index) => {
+    const score = Number(item.profileContributionScore) || 0;
+    const x = mapX(index);
+    const y = mapY(score);
+    const inBox = score >= stats.q1 && score <= stats.q3;
+    const belowBox = score < stats.q1;
+    const aboveBox = score > stats.q3;
+    const outlier = score < stats.lowerFence || score > stats.upperFence;
+    const radius = outlier ? 7.2 : 5.8;
+    const fill = belowBox ? "#b05a37" : aboveBox ? "#2f7748" : "#0d6d63";
+
+    ctx.beginPath();
+    ctx.moveTo(x, baselineY);
+    ctx.lineTo(x, y);
+    ctx.strokeStyle = "#7d756c";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.fillStyle = fill;
+    ctx.fill();
+    ctx.strokeStyle = "#fff7ed";
+    ctx.lineWidth = 1.6;
+    ctx.stroke();
+    if (outlier) {
+      ctx.beginPath();
+      ctx.arc(x, y, radius + 3, 0, Math.PI * 2);
+      ctx.strokeStyle = "#3f342d";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    ctx.beginPath();
+    ctx.moveTo(x, yBottom);
+    ctx.lineTo(x, yBottom + 5);
+    ctx.strokeStyle = "#8e7b61";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    ctx.fillStyle = "#5f5247";
+    ctx.font = "10px IBM Plex Sans, Segoe UI, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    ctx.fillText(String(index + 1), x, yBottom + 8);
+
+    return {
+      x,
+      y,
+      radius,
+      item,
+      order: index + 1,
+      score,
+      inBox,
+      belowBox,
+      aboveBox,
+      outlier
+    };
+  });
+
+  contributionScatterModel = {
+    points,
+    chartArea,
+    stats,
+    sorted: true
+  };
+
+  const insideCount = points.filter((point) => point.inBox).length;
+  const belowCount = points.filter((point) => point.belowBox).length;
+  const aboveCount = points.filter((point) => point.aboveBox).length;
+  const outlierCount = points.filter((point) => point.outlier).length;
+  const total = points.length;
+  const topImpact = [...items].sort(
+    (a, b) => (Number(b.profileContributionScore) || 0) - (Number(a.profileContributionScore) || 0)
+  )[0];
+  const topTitle = topImpact
+    ? getLocalizedArtworkTitle(topImpact.artworkTitle || tr("representativeFallbackTitle"))
+    : tr("representativeFallbackTitle");
+
+  const statsText = tr("contributionStats", {
+    min: round2(stats.min),
+    q1: round2(stats.q1),
+    median: round2(stats.median),
+    q3: round2(stats.q3),
+    max: round2(stats.max),
+    iqr: round2(stats.iqr)
+  });
+  if (elements.contributionChartSummary instanceof HTMLElement) {
+    elements.contributionChartSummary.textContent = `${statsText} · ${tr("contributionSummary", {
+      inside: insideCount,
+      total,
+      below: belowCount,
+      above: aboveCount,
+      outliers: outlierCount,
+      top: topTitle,
+    })}`;
+  }
+
+  ctx.fillStyle = "#5b4d43";
+  ctx.font = "12px IBM Plex Sans, Segoe UI, sans-serif";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+  ctx.fillText(tr("contributionAxisX"), chartArea.x + chartArea.width / 2, yBottom + 30);
+}
+
+function findContributionPointAtPosition(x, y) {
+  if (!contributionScatterModel || !Array.isArray(contributionScatterModel.points)) {
+    return null;
+  }
+
+  let nearest = null;
+  let nearestDistanceSquared = Number.POSITIVE_INFINITY;
+  contributionScatterModel.points.forEach((point) => {
+    const dx = x - point.x;
+    const dy = y - point.y;
+    const distanceSquared = dx * dx + dy * dy;
+    const hitRadius = Math.max(10, point.radius + 5);
+    if (distanceSquared <= hitRadius * hitRadius && distanceSquared < nearestDistanceSquared) {
+      nearest = point;
+      nearestDistanceSquared = distanceSquared;
+    }
+  });
+
+  return nearest;
+}
+
+function hideContributionChartTooltip() {
+  if (elements.contributionPointTooltip instanceof HTMLElement) {
+    elements.contributionPointTooltip.hidden = true;
+    elements.contributionPointTooltip.innerHTML = "";
+  }
+
+  if (elements.contributionChart instanceof HTMLCanvasElement) {
+    elements.contributionChart.style.cursor = "default";
+  }
+}
+
+function positionContributionTooltip(clientX, clientY) {
+  if (!(elements.contributionPointTooltip instanceof HTMLElement)) {
+    return;
+  }
+
+  const tooltip = elements.contributionPointTooltip;
+  const viewportPadding = 12;
+  const rect = tooltip.getBoundingClientRect();
+  const candidateLeft = clientX + 14;
+  const candidateTop = clientY + 14;
+  const maxLeft = window.innerWidth - rect.width - viewportPadding;
+  const maxTop = window.innerHeight - rect.height - viewportPadding;
+  const left = Math.max(viewportPadding, Math.min(maxLeft, candidateLeft));
+  const top = Math.max(viewportPadding, Math.min(maxTop, candidateTop));
+
+  tooltip.style.left = `${left}px`;
+  tooltip.style.top = `${top}px`;
+}
+
+function showContributionChartTooltip(point, clientX, clientY) {
+  if (!(elements.contributionPointTooltip instanceof HTMLElement)) {
+    return;
+  }
+
+  const item = point.item;
+  const title = getLocalizedArtworkTitle(item.artworkTitle || tr("representativeFallbackTitle"));
+  const artist = normalizeText(item.artistName)
+    ? getLocalizedArtistDisplayName(item.artistName)
+    : tr("labels.noArtist");
+  const chamberMeta = t3(
+    "{chamber} · object {slot}",
+    "{chamber} · object {slot}",
+    "{chamber} · objet {slot}",
+    { chamber: getChamberKeyLabel(item.chamber), slot: item.slot }
+  );
+  const statusLabel = point.inBox
+    ? tr("contributionInSpot")
+    : point.belowBox
+      ? tr("contributionOutSpot")
+      : tr("contributionAboveBox");
+  const strongestAxes = getStrongestAxesText(item.scores, 2);
+  const outlierLabel = point.outlier ? ` · ${tr("contributionOutlier")}` : "";
+  const totalPoints = contributionScatterModel && Array.isArray(contributionScatterModel.points)
+    ? contributionScatterModel.points.length
+    : 0;
+
+  elements.contributionPointTooltip.innerHTML = `
+    <img src="${escapeHtml(toSafeImageUrl(item.imageUrl))}" alt="${escapeHtml(title)}" />
+    <p class="tooltip-title">${escapeHtml(title)}</p>
+    <p class="tooltip-artist">${escapeHtml(artist)}</p>
+    <p class="tooltip-meta">${escapeHtml(chamberMeta)}</p>
+    <p class="tooltip-meta">${escapeHtml(t3("Rang", "Rank", "Rang"))}: ${point.order || "-"}${
+      totalPoints > 0 ? ` / ${totalPoints}` : ""
+    }</p>
+    <p class="tooltip-meta">${escapeHtml(tr("contributionAxisY"))}: ${round2(
+      Number(item.profileContributionScore) || 0
+    )}</p>
+    <p class="tooltip-meta">${escapeHtml(t3("Impact-aandeel", "Impact share", "Part d'impact"))}: ${round1(
+      Number(item.impactShare) || 0
+    )}% · ${escapeHtml(t3("Afstand", "Distance", "Distance"))}: ${round2(Number(item.distanceToProfile) || 0)}</p>
+    <p class="tooltip-meta">${escapeHtml(tr("contributionTopAxes"))}: ${escapeHtml(strongestAxes)}</p>
+    <p class="tooltip-meta">${escapeHtml(`${statusLabel}${outlierLabel}`)}</p>
+  `;
+  elements.contributionPointTooltip.hidden = false;
+  positionContributionTooltip(clientX, clientY);
+}
+
+function handleContributionChartPointerMove(event) {
+  const canvas = elements.contributionChart;
+  if (!(canvas instanceof HTMLCanvasElement)) {
+    return;
+  }
+  if (!contributionScatterModel) {
+    hideContributionChartTooltip();
+    return;
+  }
+
+  const rect = canvas.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+  const point = findContributionPointAtPosition(x, y);
+  if (!point) {
+    hideContributionChartTooltip();
+    return;
+  }
+
+  canvas.style.cursor = "pointer";
+  showContributionChartTooltip(point, event.clientX, event.clientY);
+}
+
+function handleContributionChartPointerLeave() {
+  hideContributionChartTooltip();
+}
+
+function renderRepresentativeSummary(report) {
+  if (!(elements.representativeList instanceof HTMLElement)) {
+    return;
+  }
+
+  const representative = report?.representative || {};
+  const entries = [
+    { role: "most", label: tr("representativeMostLabel"), item: representative.most },
+    { role: "least", label: tr("representativeLeastLabel"), item: representative.least }
+  ].filter((entry) => entry.item);
+
+  if (entries.length === 0) {
+    elements.representativeList.innerHTML = `<p class="muted">${escapeHtml(tr("representativeNoData"))}</p>`;
+    return;
+  }
+
+  elements.representativeList.innerHTML = entries
+    .map((entry) => {
+      const item = entry.item;
+      const title = getLocalizedArtworkTitle(item.artworkTitle || tr("representativeFallbackTitle"));
+      const artist = normalizeText(item.artistName)
+        ? getLocalizedArtistDisplayName(item.artistName)
+        : tr("labels.noArtist");
+      const chamberLabel = getChamberKeyLabel(item.chamber);
+      const chamberMeta = t3(
+        "{chamber} · object {slot}",
+        "{chamber} · object {slot}",
+        "{chamber} · objet {slot}",
+        { chamber: chamberLabel, slot: item.slot }
+      );
+
+      return `
+        <article class="representative-item representative-item-${entry.role}">
+          <img src="${escapeHtml(toSafeImageUrl(item.imageUrl))}" alt="${escapeHtml(title)}" />
+          <div>
+            <h4>${escapeHtml(entry.label)}</h4>
+            <p class="rep-title">${escapeHtml(title)}</p>
+            <p class="rep-artist">${escapeHtml(artist)}</p>
+            <p class="rep-meta">${escapeHtml(chamberMeta)} · ${escapeHtml(
+              tr("representativeDistanceLabel")
+            )}: ${item.distanceToProfile}</p>
+            <p class="rep-impact">${escapeHtml(tr("representativeImpactLabel"))}: ${item.impactShare}%</p>
+            <p class="rep-impact">${escapeHtml(tr("representativeContributionScoreLabel"))}: ${round2(
+              Number(item.profileContributionScore) || 0
+            )}</p>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
 }
 
 function drawRadarChart(canvas, averages) {
@@ -2937,6 +3803,7 @@ function saveDraft(customMessage) {
       slotsPerChamber: state.slotsPerChamber,
       pickerTargetEntryId: state.pickerTargetEntryId,
       activeChamber: state.activeChamber,
+      reportDiagramMode: state.reportDiagramMode,
       savedAt: Date.now()
     };
 
@@ -3007,6 +3874,8 @@ function loadDraft() {
 
     state.pickerTargetEntryId =
       typeof parsed.pickerTargetEntryId === "string" ? parsed.pickerTargetEntryId : null;
+
+    state.reportDiagramMode = parsed.reportDiagramMode === "contribution" ? "contribution" : "profile";
 
     state.axisQuestionVariant = createAxisQuestionVariantMap();
     if (parsed.axisQuestionVariant && typeof parsed.axisQuestionVariant === "object") {

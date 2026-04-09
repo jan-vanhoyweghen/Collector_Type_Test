@@ -805,6 +805,7 @@ input[type="range"] {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.8rem;
+  align-items: start;
 }
 
 .card {
@@ -954,6 +955,167 @@ input[type="range"] {
   width: 100%;
   height: auto;
   display: block;
+}
+
+#contributionChart {
+  width: 100%;
+  height: auto;
+  display: block;
+  cursor: default;
+  margin-top: 0.25rem;
+}
+
+.diagram-toggle {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.15rem 0 0.65rem;
+}
+
+.diagram-toggle-btn {
+  border: 1px solid #c9ab85;
+  background: #fff5e7;
+  color: #5b4228;
+  border-radius: 999px;
+  padding: 0.34rem 0.7rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+
+.diagram-toggle-btn:hover {
+  border-color: #b68f62;
+}
+
+.diagram-toggle-btn.is-active {
+  background: #116c62;
+  color: #f4ede3;
+  border-color: #116c62;
+}
+
+.diagram-toggle-btn:focus-visible {
+  outline: 2px solid #1a7e72;
+  outline-offset: 2px;
+}
+
+.chart-point-tooltip {
+  position: fixed;
+  z-index: 9999;
+  max-width: min(280px, calc(100vw - 24px));
+  background: #fffaf2;
+  border: 1px solid #ceb490;
+  border-radius: 10px;
+  box-shadow: 0 12px 24px #6247252e;
+  padding: 0.5rem;
+  color: #3f342d;
+  font-size: 0.76rem;
+  line-height: 1.35;
+  pointer-events: none;
+}
+
+.chart-point-tooltip img {
+  width: 100%;
+  max-height: 118px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #dbc4a4;
+  background: #f2e8d5;
+}
+
+.chart-point-tooltip .tooltip-title {
+  margin: 0.42rem 0 0;
+  font-weight: 700;
+  color: #2d514b;
+}
+
+.chart-point-tooltip .tooltip-artist {
+  margin: 0.12rem 0 0;
+  color: #5e4f45;
+}
+
+.chart-point-tooltip .tooltip-meta {
+  margin: 0.16rem 0 0;
+  color: #5a4d45;
+}
+
+.representative-list {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.representative-contribution-block {
+  margin-top: 0.72rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid #eadbc7;
+}
+
+.representative-contribution-block h4 {
+  margin: 0;
+  color: #2e3f3c;
+  font-size: 0.98rem;
+}
+
+.representative-item {
+  border: 1px solid #e0d0b8;
+  border-radius: 12px;
+  background: #fffdf9;
+  padding: 0.6rem 0.68rem;
+  display: grid;
+  grid-template-columns: 92px 1fr;
+  gap: 0.6rem;
+  align-items: start;
+}
+
+.representative-item img {
+  width: 92px;
+  height: 72px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #dbc4a4;
+  background: #f2e8d5;
+}
+
+.representative-item h4 {
+  margin: 0;
+  color: #0c5f57;
+  font-size: 0.9rem;
+}
+
+.representative-item .rep-title {
+  margin: 0.18rem 0 0;
+  color: #3f3531;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.representative-item .rep-artist {
+  margin: 0.08rem 0 0;
+  color: #60534a;
+  font-size: 0.82rem;
+}
+
+.representative-item .rep-meta {
+  margin: 0.2rem 0 0;
+  color: #5a4d45;
+  font-size: 0.8rem;
+}
+
+.representative-item .rep-impact {
+  margin: 0.12rem 0 0;
+  color: #3f6f66;
+  font-size: 0.79rem;
+}
+
+@media (max-width: 680px) {
+  .representative-item {
+    grid-template-columns: 1fr;
+  }
+
+  .representative-item img {
+    width: 100%;
+    height: 160px;
+  }
 }
 
 .reveal {
